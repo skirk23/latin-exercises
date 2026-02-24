@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercitia Latīna</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #1a1a1e;
+      color: #e8e4d9;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+      color: #c9b97a;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 2.5rem;
+      font-style: italic;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #a08850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .exercise-link {
+      display: block;
+      padding: 1rem 1.25rem;
+      background: #222226;
+      border: 1px solid #3a3a3e;
+      text-decoration: none;
+      color: #e8e4d9;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .exercise-link:hover {
+      border-color: #c9b97a;
+      background: #2a2824;
+    }
+
+    .exercise-link .title {
+      font-size: 1.05rem;
+      color: #c9b97a;
+      margin-bottom: 0.35rem;
+    }
+
+    .exercise-link .desc {
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.5;
+    }
+
+    .exercise-link .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      color: #777;
+      border: 1px solid #444;
+      padding: 0.15rem 0.5rem;
+      margin-top: 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #333;
+      font-size: 0.75rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Exercitia Latīna</h1>
+    <p class="subtitle">Familia Rōmāna — Ørberg</p>
+
+    <h2>Morphologia</h2>
+    <div class="exercise-list">
+      <a class="exercise-link" href="perfect-tense.html">
+        <div class="title">Tempus Perfectum</div>
+        <div class="desc">
+          Coniugā verba in tempore perfectō. 434 verba ex capitulis 1–35.
+        </div>
+        <span class="badge">Cap. 1–35</span>
+      </a>
+
+      <!-- Future exercises go here, e.g.:
+      <a class="exercise-link" href="noun-declension.html">
+        <div class="title">Dēclīnātiōnēs Nōminum</div>
+        <div class="desc">Dēclīnā nōmina per omnēs cāsūs.</div>
+        <span class="badge">Cap. 1–20</span>
+      </a>
+      -->
+    </div>
+
+    <div class="footer">
+      Exercitia ex <em>Lingua Latīna per sē Illustrāta</em> (H. Ørberg).
+    </div>
+  </div>
+</body>
+</html>

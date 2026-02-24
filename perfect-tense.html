@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tempus Perfectum — Exercitia Latīna</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #1a1a1e;
+      color: #e8e4d9;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+      padding: 2rem;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    a.back-link {
+      font-size: 0.8rem; color: #777; text-decoration: none;
+      display: inline-block; margin-bottom: 1rem;
+    }
+    a.back-link:hover { color: #c9b97a; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a class="back-link" href="index.html">&larr; Exercitia Latīna</a>
+    <div id="root"></div>
+  </div>
+
+  <script>
+    // ========================================================
+    // CONFIGURATION — set your Google Apps Script webhook URL
+    // ========================================================
+    var SHEETS_WEBHOOK_URL = "";
+    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
+    // Leave empty to disable reporting.
+  </script>
+
+  <script>
+    // ========================================================
+    // VERB DATA
+    // ========================================================
+const VERBS = [
+  { inf: "esse", perf1: "fuī", meaning: "to be", ch: 1 },
+  { inf: "vocāre", perf1: "vocāvī", meaning: "call", ch: 3 },
+  { inf: "vidēre", perf1: "vīdī", meaning: "see", ch: 3 },
+  { inf: "verberāre", perf1: "verberāvī", meaning: "beat", ch: 3 },
+  { inf: "venīre", perf1: "vēnī", meaning: "come", ch: 3 },
+  { inf: "rīdēre", perf1: "rīsī", meaning: "laugh", ch: 3 },
+  { inf: "respondēre", perf1: "respondī", meaning: "answer", ch: 3 },
+  { inf: "pulsāre", perf1: "pulsāvī", meaning: "strike", ch: 3 },
+  { inf: "plōrāre", perf1: "plorāvī", meaning: "cry", ch: 3 },
+  { inf: "interrogāre", perf1: "interrogāvī", meaning: "ask", ch: 3 },
+  { inf: "dormīre", perf1: "dormīvī", meaning: "sleep", ch: 3 },
+  { inf: "cantāre", perf1: "cantāvī", meaning: "sing", ch: 3 },
+  { inf: "audīre", perf1: "audīvī", meaning: "hear", ch: 3 },
+  { inf: "tacēre", perf1: "tacuī", meaning: "be silent", ch: 4 },
+  { inf: "sūmere", perf1: "sūmpsī", meaning: "take", ch: 4 },
+  { inf: "salūtāre", perf1: "salutāvī", meaning: "greet", ch: 4 },
+  { inf: "pōnere", perf1: "posuī", meaning: "place", ch: 4 },
+  { inf: "pārēre", perf1: "pāruī", meaning: "obey", ch: 4 },
+  { inf: "numerāre", perf1: "numerāvī", meaning: "count", ch: 4 },
+  { inf: "habēre", perf1: "habuī", meaning: "have", ch: 4 },
+  { inf: "discēdere", perf1: "discessī", meaning: "depart", ch: 4 },
+  { inf: "adesse", perf1: "adfuī", meaning: "be present", ch: 4 },
+  { inf: "accūsāre", perf1: "accūsāvī", meaning: "accuse", ch: 4 },
+  { inf: "abesse", perf1: "āfuī", meaning: "be absent", ch: 4 },
+  { inf: "imperāre", perf1: "imperāvī", meaning: "command", ch: 4 },
+  { inf: "habitāre", perf1: "habitāvī", meaning: "dwell", ch: 5 },
+  { inf: "dēlectāre", perf1: "dēlectāvī", meaning: "delight", ch: 5 },
+  { inf: "carpere", perf1: "carpsī", meaning: "gather", ch: 5 },
+  { inf: "agere", perf1: "ēgī", meaning: "drive, do", ch: 5 },
+  { inf: "vehere", perf1: "vēxī", meaning: "carry, convey", ch: 6 },
+  { inf: "timēre", perf1: "timuī", meaning: "fear", ch: 6 },
+  { inf: "portāre", perf1: "portāvī", meaning: "carry", ch: 6 },
+  { inf: "īre", perf1: "iī", meaning: "go", ch: 6 },
+  { inf: "intrāre", perf1: "intrāvī", meaning: "enter", ch: 6 },
+  { inf: "ambulāre", perf1: "ambulāvī", meaning: "walk", ch: 6 },
+  { inf: "vertere", perf1: "vertī", meaning: "turn", ch: 7 },
+  { inf: "tergēre", perf1: "tersī", meaning: "wipe", ch: 7 },
+  { inf: "tenēre", perf1: "tenuī", meaning: "hold", ch: 7 },
+  { inf: "lacrimāre", perf1: "lacrimāvī", meaning: "weep", ch: 7 },
+  { inf: "exspectāre", perf1: "exspectāvī", meaning: "wait for", ch: 7 },
+  { inf: "exīre", perf1: "exiī", meaning: "go out", ch: 7 },
+  { inf: "dare", perf1: "dedī", meaning: "give", ch: 7 },
+  { inf: "currere", perf1: "cucurrī", meaning: "run", ch: 7 },
+  { inf: "claudere", perf1: "clausī", meaning: "shut", ch: 7 },
+  { inf: "aperīre", perf1: "aperuī", meaning: "open", ch: 7 },
+  { inf: "advenīre", perf1: "advēnī", meaning: "arrive", ch: 7 },
+  { inf: "adīre", perf1: "adiī", meaning: "approach", ch: 7 },
+  { inf: "vēndere", perf1: "vēndidī", meaning: "sell", ch: 8 },
+  { inf: "ostendere", perf1: "ostendī", meaning: "show", ch: 8 },
+  { inf: "ōrnāre", perf1: "ōrnāvī", meaning: "adorn", ch: 8 },
+  { inf: "mōnstrāre", perf1: "mōnstrāvī", meaning: "point out", ch: 8 },
+  { inf: "emere", perf1: "ēmī", meaning: "buy", ch: 8 },
+  { inf: "convenīre", perf1: "convēnī", meaning: "come together", ch: 8 },
+  { inf: "cōnstāre", perf1: "cōnstitī", meaning: "cost, stand firm", ch: 8 },
+  { inf: "cōnsistere", perf1: "cōnstitī", meaning: "stop, halt", ch: 8 },
+  { inf: "clāmāre", perf1: "clāmāvī", meaning: "shout", ch: 8 },
+  { inf: "aspicere", perf1: "aspexī", meaning: "look at", ch: 8 },
+  { inf: "accipere", perf1: "accēpī", meaning: "receive", ch: 8 },
+  { inf: "abīre", perf1: "abiī", meaning: "go away", ch: 8 },
+  { inf: "ululāre", perf1: "ululāvī", meaning: "howl", ch: 9 },
+  { inf: "reperīre", perf1: "repperī", meaning: "find", ch: 9 },
+  { inf: "relinquere", perf1: "relīquī", meaning: "leave", ch: 9 },
+  { inf: "quaerere", perf1: "quaesīvī", meaning: "seek", ch: 9 },
+  { inf: "petere", perf1: "petīvī", meaning: "seek, attack", ch: 9 },
+  { inf: "lūcēre", perf1: "luxī", meaning: "shine", ch: 9 },
+  { inf: "lātrāre", perf1: "lātrāvī", meaning: "bark", ch: 9 },
+  { inf: "impōnere", perf1: "imposuī", meaning: "place on", ch: 9 },
+  { inf: "iacēre", perf1: "iacuī", meaning: "lie down", ch: 9 },
+  { inf: "errāre", perf1: "errāvī", meaning: "wander", ch: 9 },
+  { inf: "dūcere", perf1: "dūxī", meaning: "lead", ch: 9 },
+  { inf: "dēclīnāre", perf1: "dēclīnāvī", meaning: "decline", ch: 9 },
+  { inf: "bibere", perf1: "bibī", meaning: "drink", ch: 9 },
+  { inf: "bālāre", perf1: "bālāvī", meaning: "bleat", ch: 9 },
+  { inf: "accurrere", perf1: "accucurrī", meaning: "run to help", ch: 9 },
+  { inf: "velle", perf1: "voluī", meaning: "want, wish", ch: 10 },
+  { inf: "vīvere", perf1: "vīxī", meaning: "live", ch: 10 },
+  { inf: "volāre", perf1: "volāvī", meaning: "fly", ch: 10 },
+  { inf: "sustinēre", perf1: "sustinuī", meaning: "endure", ch: 10 },
+  { inf: "spīrāre", perf1: "spīrāvī", meaning: "breathe", ch: 10 },
+  { inf: "parere", perf1: "peperī", meaning: "give birth", ch: 10 },
+  { inf: "occultāre", perf1: "occultāvī", meaning: "hide", ch: 10 },
+  { inf: "natāre", perf1: "natāvī", meaning: "swim", ch: 10 },
+  { inf: "movēre", perf1: "mōvī", meaning: "move", ch: 10 },
+  { inf: "lūdere", perf1: "lūsī", meaning: "play", ch: 10 },
+  { inf: "facere", perf1: "fēcī", meaning: "make, do", ch: 10 },
+  { inf: "capere", perf1: "cēpī", meaning: "take, capture", ch: 10 },
+  { inf: "canere", perf1: "cecinī", meaning: "sing, crow", ch: 10 },
+  { inf: "cadere", perf1: "cecidī", meaning: "fall", ch: 10 },
+  { inf: "ascendere", perf1: "ascendī", meaning: "climb", ch: 10 },
+  { inf: "tangere", perf1: "tetigī", meaning: "touch", ch: 11 },
+  { inf: "stāre", perf1: "stetī", meaning: "stand", ch: 11 },
+  { inf: "spectāre", perf1: "spectāvī", meaning: "watch", ch: 11 },
+  { inf: "sentīre", perf1: "sēnsī", meaning: "feel, sense", ch: 11 },
+  { inf: "sedēre", perf1: "sēdī", meaning: "sit", ch: 11 },
+  { inf: "sānāre", perf1: "sānāvī", meaning: "heal", ch: 11 },
+  { inf: "revenīre", perf1: "revēnī", meaning: "come back", ch: 11 },
+  { inf: "putāre", perf1: "putāvī", meaning: "think", ch: 11 },
+  { inf: "palpitāre", perf1: "palpitāvī", meaning: "throb", ch: 11 },
+  { inf: "iubēre", perf1: "iussī", meaning: "order", ch: 11 },
+  { inf: "fluere", perf1: "fluxī", meaning: "flow", ch: 11 },
+  { inf: "dolēre", perf1: "doluī", meaning: "grieve", ch: 11 },
+  { inf: "dīcere", perf1: "dīxī", meaning: "say", ch: 11 },
+  { inf: "dētergēre", perf1: "dētersī", meaning: "wipe off", ch: 11 },
+  { inf: "arcessere", perf1: "arcessīvī", meaning: "send for", ch: 11 },
+  { inf: "appōnere", perf1: "apposuī", meaning: "serve, place on", ch: 11 },
+  { inf: "aegrōtāre", perf1: "aegrōtāvī", meaning: "be ill", ch: 11 },
+  { inf: "pugnāre", perf1: "pugnāvī", meaning: "fight", ch: 12 },
+  { inf: "oppugnāre", perf1: "oppugnāvī", meaning: "attack", ch: 12 },
+  { inf: "mīlitāre", perf1: "mīlitāvī", meaning: "serve as soldier", ch: 12 },
+  { inf: "metuere", perf1: "metuī", meaning: "fear", ch: 12 },
+  { inf: "incolere", perf1: "incoluī", meaning: "inhabit", ch: 12 },
+  { inf: "iacere", perf1: "iēcī", meaning: "throw", ch: 12 },
+  { inf: "fugere", perf1: "fūgī", meaning: "flee", ch: 12 },
+  { inf: "ferre", perf1: "tulī", meaning: "carry, bear", ch: 12 },
+  { inf: "expugnāre", perf1: "expugnāvī", meaning: "conquer", ch: 12 },
+  { inf: "dīvidere", perf1: "dīvīsī", meaning: "divide", ch: 12 },
+  { inf: "dēfendere", perf1: "dēfendī", meaning: "defend", ch: 12 },
+  { inf: "operīre", perf1: "operuī", meaning: "cover", ch: 13 },
+  { inf: "nōmināre", perf1: "nōmināvī", meaning: "name", ch: 13 },
+  { inf: "incipere", perf1: "incēpī", meaning: "begin", ch: 13 },
+  { inf: "illūstrāre", perf1: "illūstrāvī", meaning: "illuminate", ch: 13 },
+  { inf: "vigilāre", perf1: "vigilāvī", meaning: "be awake", ch: 14 },
+  { inf: "vestīre", perf1: "vestīvī", meaning: "dress", ch: 14 },
+  { inf: "valēre", perf1: "valuī", meaning: "be strong", ch: 14 },
+  { inf: "surgere", perf1: "surrexī", meaning: "rise", ch: 14 },
+  { inf: "poscere", perf1: "poposcī", meaning: "demand", ch: 14 },
+  { inf: "mergere", perf1: "mersī", meaning: "plunge", ch: 14 },
+  { inf: "lavāre", perf1: "lāvī", meaning: "wash", ch: 14 },
+  { inf: "induere", perf1: "induī", meaning: "put on", ch: 14 },
+  { inf: "gerere", perf1: "gessī", meaning: "carry, wear", ch: 14 },
+  { inf: "excitāre", perf1: "excitāvī", meaning: "wake up", ch: 14 },
+  { inf: "cubāre", perf1: "cubuī", meaning: "lie in bed", ch: 14 },
+  { inf: "afferre", perf1: "attulī", meaning: "bring", ch: 14 },
+  { inf: "redīre", perf1: "rediī", meaning: "return", ch: 15 },
+  { inf: "reddere", perf1: "reddidī", meaning: "give back", ch: 15 },
+  { inf: "recitāre", perf1: "recitāvī", meaning: "read aloud", ch: 15 },
+  { inf: "pūnīre", perf1: "pūnīvī", meaning: "punish", ch: 15 },
+  { inf: "exclāmāre", perf1: "exclāmāvī", meaning: "exclaim", ch: 15 },
+  { inf: "dēsinere", perf1: "dēsiī", meaning: "stop, end", ch: 15 },
+  { inf: "cōnsīdere", perf1: "cōnsēdī", meaning: "sit down", ch: 15 },
+  { inf: "turbāre", perf1: "turbāvī", meaning: "agitate", ch: 16 },
+  { inf: "servāre", perf1: "servāvī", meaning: "save", ch: 16 },
+  { inf: "occidere", perf1: "occīdī", meaning: "fall, set", ch: 16 },
+  { inf: "nāvigāre", perf1: "nāvigāvī", meaning: "sail", ch: 16 },
+  { inf: "invocāre", perf1: "invocāvī", meaning: "invoke", ch: 16 },
+  { inf: "interesse", perf1: "interfuī", meaning: "take part in", ch: 16 },
+  { inf: "īnfluere", perf1: "īnfluxī", meaning: "flow into", ch: 16 },
+  { inf: "implēre", perf1: "implēvī", meaning: "fill", ch: 16 },
+  { inf: "iactāre", perf1: "iactāvī", meaning: "toss", ch: 16 },
+  { inf: "haurīre", perf1: "hausī", meaning: "draw water", ch: 16 },
+  { inf: "gubernāre", perf1: "gubernāvī", meaning: "steer", ch: 16 },
+  { inf: "flāre", perf1: "flāvī", meaning: "blow", ch: 16 },
+  { inf: "cōnscendere", perf1: "cōnscendī", meaning: "board", ch: 16 },
+  { inf: "cernere", perf1: "crēvī", meaning: "discern", ch: 16 },
+  { inf: "appellāre", perf1: "appellāvī", meaning: "call, address", ch: 16 },
+  { inf: "tollere", perf1: "sustulī", meaning: "raise, remove", ch: 17 },
+  { inf: "scīre", perf1: "scīvī", meaning: "know", ch: 17 },
+  { inf: "reprehendere", perf1: "reprehendī", meaning: "blame", ch: 17 },
+  { inf: "repōnere", perf1: "reposuī", meaning: "put back", ch: 17 },
+  { inf: "prōmere", perf1: "prōmpsī", meaning: "take out", ch: 17 },
+  { inf: "nescīre", perf1: "nescīvī", meaning: "not know", ch: 17 },
+  { inf: "laudāre", perf1: "laudāvī", meaning: "praise", ch: 17 },
+  { inf: "interpellāre", perf1: "interpellāvī", meaning: "interrupt", ch: 17 },
+  { inf: "docēre", perf1: "docuī", meaning: "teach", ch: 17 },
+  { inf: "discere", perf1: "didicī", meaning: "learn", ch: 17 },
+  { inf: "dēmōnstrāre", perf1: "dēmōnstrāvī", meaning: "show", ch: 17 },
+  { inf: "computāre", perf1: "computāvī", meaning: "calculate", ch: 17 },
+  { inf: "cōgitāre", perf1: "cōgitāvī", meaning: "think", ch: 17 },
+  { inf: "superesse", perf1: "superfuī", meaning: "be left over", ch: 18 },
+  { inf: "significāre", perf1: "significāvī", meaning: "indicate", ch: 18 },
+  { inf: "signāre", perf1: "signāvī", meaning: "mark, seal", ch: 18 },
+  { inf: "scrībere", perf1: "scrīpsī", meaning: "write", ch: 18 },
+  { inf: "premere", perf1: "pressī", meaning: "press", ch: 18 },
+  { inf: "legere", perf1: "lēgī", meaning: "read", ch: 18 },
+  { inf: "iungere", perf1: "iūnxī", meaning: "join", ch: 18 },
+  { inf: "intellegere", perf1: "intellēxī", meaning: "understand", ch: 18 },
+  { inf: "imprimere", perf1: "impressī", meaning: "press into", ch: 18 },
+  { inf: "exaudīre", perf1: "exaudīvī", meaning: "hear", ch: 18 },
+  { inf: "efficere", perf1: "effēcī", meaning: "cause", ch: 18 },
+  { inf: "dictāre", perf1: "dictāvī", meaning: "dictate", ch: 18 },
+  { inf: "dēlēre", perf1: "dēlēvī", meaning: "delete", ch: 18 },
+  { inf: "deesse", perf1: "dēfuī", meaning: "be missing", ch: 18 },
+  { inf: "corrigere", perf1: "corrēxī", meaning: "correct", ch: 18 },
+  { inf: "comparāre", perf1: "comparāvī", meaning: "compare", ch: 18 },
+  { inf: "animadvertere", perf1: "animadvertī", meaning: "notice", ch: 18 },
+  { inf: "addere", perf1: "addidī", meaning: "add", ch: 18 },
+  { inf: "coniungere", perf1: "coniūnxī", meaning: "unite", ch: 18 },
+  { inf: "remittere", perf1: "remīsī", meaning: "send back", ch: 19 },
+  { inf: "possidēre", perf1: "possēdī", meaning: "possess", ch: 19 },
+  { inf: "mittere", perf1: "mīsī", meaning: "send", ch: 19 },
+  { inf: "minuere", perf1: "minuī", meaning: "diminish", ch: 19 },
+  { inf: "augēre", perf1: "auxī", meaning: "increase", ch: 19 },
+  { inf: "vāgīre", perf1: "vāgīvī", meaning: "wail", ch: 20 },
+  { inf: "silēre", perf1: "siluī", meaning: "be silent", ch: 20 },
+  { inf: "postulāre", perf1: "postulāvī", meaning: "demand", ch: 20 },
+  { inf: "pergere", perf1: "perrexī", meaning: "proceed", ch: 20 },
+  { inf: "occurrere", perf1: "occurrī", meaning: "meet", ch: 20 },
+  { inf: "manēre", perf1: "mānsī", meaning: "remain", ch: 20 },
+  { inf: "dīligere", perf1: "dīlēxī", meaning: "love", ch: 20 },
+  { inf: "dēbēre", perf1: "dēbuī", meaning: "owe", ch: 20 },
+  { inf: "cūrāre", perf1: "cūrāvī", meaning: "care for", ch: 20 },
+  { inf: "carēre", perf1: "caruī", meaning: "lack", ch: 20 },
+  { inf: "alere", perf1: "aluī", meaning: "feed", ch: 20 },
+  { inf: "advehere", perf1: "advexī", meaning: "convey to", ch: 20 },
+  { inf: "vincere", perf1: "vīcī", meaning: "defeat", ch: 21 },
+  { inf: "nārrāre", perf1: "nārrāvī", meaning: "tell", ch: 21 },
+  { inf: "mūtāre", perf1: "mūtāvī", meaning: "change", ch: 21 },
+  { inf: "fallere", perf1: "fefellī", meaning: "deceive", ch: 21 },
+  { inf: "excūsāre", perf1: "excūsāvī", meaning: "excuse", ch: 21 },
+  { inf: "dubitāre", perf1: "dubitāvī", meaning: "doubt", ch: 21 },
+  { inf: "crēdere", perf1: "crēdidī", meaning: "believe", ch: 21 },
+  { inf: "cōnspicere", perf1: "cōnspexī", meaning: "catch sight of", ch: 21 },
+  { inf: "cognōscere", perf1: "cognōvī", meaning: "recognize", ch: 21 },
+  { inf: "vincīre", perf1: "vinxī", meaning: "tie", ch: 22 },
+  { inf: "tremere", perf1: "tremuī", meaning: "tremble", ch: 22 },
+  { inf: "terrēre", perf1: "terruī", meaning: "frighten", ch: 22 },
+  { inf: "solvere", perf1: "solvī", meaning: "untie, pay", ch: 22 },
+  { inf: "sinere", perf1: "sīvī", meaning: "allow", ch: 22 },
+  { inf: "scindere", perf1: "scidī", meaning: "tear", ch: 22 },
+  { inf: "salīre", perf1: "saluī", meaning: "jump", ch: 22 },
+  { inf: "rumpere", perf1: "rūpī", meaning: "break", ch: 22 },
+  { inf: "rogitāre", perf1: "rogitāvī", meaning: "ask repeatedly", ch: 22 },
+  { inf: "retinēre", perf1: "retinuī", meaning: "hold back", ch: 22 },
+  { inf: "resistere", perf1: "restitī", meaning: "resist", ch: 22 },
+  { inf: "removēre", perf1: "remōvī", meaning: "remove", ch: 22 },
+  { inf: "recēdere", perf1: "recessī", meaning: "go back", ch: 22 },
+  { inf: "prōcēdere", perf1: "prōcessī", meaning: "advance", ch: 22 },
+  { inf: "prehendere", perf1: "prehendī", meaning: "seize", ch: 22 },
+  { inf: "pellere", perf1: "pepulī", meaning: "drive off", ch: 22 },
+  { inf: "mordēre", perf1: "momordī", meaning: "bite", ch: 22 },
+  { inf: "monēre", perf1: "monuī", meaning: "advise", ch: 22 },
+  { inf: "fremere", perf1: "fremuī", meaning: "growl", ch: 22 },
+  { inf: "dērīdēre", perf1: "dērīsī", meaning: "laugh at", ch: 22 },
+  { inf: "cūstōdīre", perf1: "cūstōdīvī", meaning: "guard", ch: 22 },
+  { inf: "cēdere", perf1: "cessī", meaning: "withdraw", ch: 22 },
+  { inf: "cavēre", perf1: "cāvī", meaning: "beware", ch: 22 },
+  { inf: "admittere", perf1: "admīsī", meaning: "admit", ch: 22 },
+  { inf: "accēdere", perf1: "accessī", meaning: "approach", ch: 22 },
+  { inf: "trādere", perf1: "trādidī", meaning: "hand over", ch: 23 },
+  { inf: "rubēre", perf1: "rubuī", meaning: "blush", ch: 23 },
+  { inf: "prōmittere", perf1: "prōmīsī", meaning: "promise", ch: 23 },
+  { inf: "pallēre", perf1: "palluī", meaning: "be pale", ch: 23 },
+  { inf: "negāre", perf1: "negāvī", meaning: "deny", ch: 23 },
+  { inf: "merēre", perf1: "meruī", meaning: "earn", ch: 23 },
+  { inf: "īnscrībere", perf1: "īnscrīpsī", meaning: "inscribe", ch: 23 },
+  { inf: "inclūdere", perf1: "inclūsī", meaning: "shut up", ch: 23 },
+  { inf: "dīmittere", perf1: "dīmīsī", meaning: "dismiss", ch: 23 },
+  { inf: "continēre", perf1: "continuī", meaning: "contain", ch: 23 },
+  { inf: "āvertere", perf1: "āvertī", meaning: "avert", ch: 23 },
+  { inf: "recumbere", perf1: "recubuī", meaning: "lie down", ch: 24 },
+  { inf: "nōscere", perf1: "nōvī", meaning: "get to know", ch: 24 },
+  { inf: "ignōrāre", perf1: "ignōrāvī", meaning: "not know", ch: 24 },
+  { inf: "frangere", perf1: "frēgī", meaning: "break, shatter", ch: 24 },
+  { inf: "flēre", perf1: "flēvī", meaning: "weep", ch: 24 },
+  { inf: "cupere", perf1: "cupīvī", meaning: "desire", ch: 24 },
+  { inf: "convertere", perf1: "convertī", meaning: "turn", ch: 24 },
+  { inf: "vorāre", perf1: "vorāvī", meaning: "devour", ch: 25 },
+  { inf: "trahere", perf1: "trāxī", meaning: "drag", ch: 25 },
+  { inf: "regere", perf1: "rēxī", meaning: "govern", ch: 25 },
+  { inf: "prōspicere", perf1: "prōspexī", meaning: "look ahead", ch: 25 },
+  { inf: "patēre", perf1: "patuī", meaning: "lie open", ch: 25 },
+  { inf: "occīdere", perf1: "occīdī", meaning: "kill", ch: 25 },
+  { inf: "necāre", perf1: "necāvī", meaning: "kill", ch: 25 },
+  { inf: "interficere", perf1: "interfēcī", meaning: "kill", ch: 25 },
+  { inf: "dēserere", perf1: "dēseruī", meaning: "desert", ch: 25 },
+  { inf: "dēscendere", perf1: "dēscendī", meaning: "descend", ch: 25 },
+  { inf: "cōnstituere", perf1: "cōnstituī", meaning: "decide", ch: 25 },
+  { inf: "ūrere", perf1: "ussī", meaning: "burn", ch: 26 },
+  { inf: "revocāre", perf1: "revocāvī", meaning: "call back", ch: 26 },
+  { inf: "mollīre", perf1: "mollīvī", meaning: "soften", ch: 26 },
+  { inf: "levāre", perf1: "levāvī", meaning: "lift", ch: 26 },
+  { inf: "iuvāre", perf1: "iūvī", meaning: "help", ch: 26 },
+  { inf: "invenīre", perf1: "invēnī", meaning: "find", ch: 26 },
+  { inf: "fīgere", perf1: "fīxī", meaning: "fix, fasten", ch: 26 },
+  { inf: "excōgitāre", perf1: "excōgitāvī", meaning: "devise", ch: 26 },
+  { inf: "ēvolāre", perf1: "ēvolāvī", meaning: "fly out", ch: 26 },
+  { inf: "effugere", perf1: "effūgī", meaning: "escape", ch: 26 },
+  { inf: "dēspicere", perf1: "dēspexī", meaning: "despise", ch: 26 },
+  { inf: "cōnsūmere", perf1: "cōnsūmpsī", meaning: "consume", ch: 26 },
+  { inf: "cōnficere", perf1: "cōnfēcī", meaning: "accomplish", ch: 26 },
+  { inf: "accidere", perf1: "accidī", meaning: "happen", ch: 26 },
+  { inf: "aberrāre", perf1: "aberrāvī", meaning: "stray", ch: 26 },
+  { inf: "suspicere", perf1: "suspexī", meaning: "look up at", ch: 26 },
+  { inf: "serere", perf1: "sēvī", meaning: "sow", ch: 27 },
+  { inf: "rigāre", perf1: "rigāvī", meaning: "irrigate", ch: 27 },
+  { inf: "rapere", perf1: "rapuī", meaning: "carry off", ch: 27 },
+  { inf: "quiēscere", perf1: "quiēvī", meaning: "rest", ch: 27 },
+  { inf: "prōicere", perf1: "proiēcī", meaning: "throw forward", ch: 27 },
+  { inf: "prohibēre", perf1: "prohibuī", meaning: "prevent", ch: 27 },
+  { inf: "pāscere", perf1: "pāvī", meaning: "feed, pasture", ch: 27 },
+  { inf: "ōrāre", perf1: "ōrāvī", meaning: "pray, beg", ch: 27 },
+  { inf: "nocēre", perf1: "nocuī", meaning: "harm", ch: 27 },
+  { inf: "neglegere", perf1: "neglēxī", meaning: "neglect", ch: 27 },
+  { inf: "metere", perf1: "messuī", meaning: "reap", ch: 27 },
+  { inf: "labōrāre", perf1: "labōrāvī", meaning: "toil", ch: 27 },
+  { inf: "invehere", perf1: "invexī", meaning: "import", ch: 27 },
+  { inf: "exīstimāre", perf1: "exīstimāvī", meaning: "consider", ch: 27 },
+  { inf: "crēscere", perf1: "crēvī", meaning: "grow", ch: 27 },
+  { inf: "colere", perf1: "coluī", meaning: "cultivate", ch: 27 },
+  { inf: "cingere", perf1: "cinxī", meaning: "surround", ch: 27 },
+  { inf: "cēnsēre", perf1: "cēnsuī", meaning: "think", ch: 27 },
+  { inf: "arāre", perf1: "arāvī", meaning: "plow", ch: 27 },
+  { inf: "vītāre", perf1: "vītāvī", meaning: "avoid", ch: 28 },
+  { inf: "suscitāre", perf1: "suscitāvī", meaning: "rouse", ch: 28 },
+  { inf: "spērāre", perf1: "spērāvī", meaning: "hope", ch: 28 },
+  { inf: "servīre", perf1: "servīvī", meaning: "serve", ch: 28 },
+  { inf: "salvāre", perf1: "salvāvī", meaning: "save", ch: 28 },
+  { inf: "rogāre", perf1: "rogāvī", meaning: "ask", ch: 28 },
+  { inf: "rēgnāre", perf1: "rēgnāvī", meaning: "reign", ch: 28 },
+  { inf: "pervenīre", perf1: "pervēnī", meaning: "arrive", ch: 28 },
+  { inf: "persuādēre", perf1: "persuāsī", meaning: "persuade", ch: 28 },
+  { inf: "perīre", perf1: "periī", meaning: "perish", ch: 28 },
+  { inf: "oboedīre", perf1: "oboedīvī", meaning: "obey", ch: 28 },
+  { inf: "memorāre", perf1: "memorāvī", meaning: "mention", ch: 28 },
+  { inf: "extendere", perf1: "extendī", meaning: "extend", ch: 28 },
+  { inf: "ēvolvere", perf1: "ēvolvī", meaning: "unroll", ch: 28 },
+  { inf: "ēicere", perf1: "ēiēcī", meaning: "throw out", ch: 28 },
+  { inf: "disiungere", perf1: "disiūnxī", meaning: "separate", ch: 28 },
+  { inf: "cessāre", perf1: "cessāvī", meaning: "cease", ch: 28 },
+  { inf: "apprehendere", perf1: "apprehendī", meaning: "seize", ch: 28 },
+  { inf: "adōrāre", perf1: "adōrāvī", meaning: "worship", ch: 28 },
+  { inf: "surripere", perf1: "surripuī", meaning: "steal", ch: 29 },
+  { inf: "subīre", perf1: "subiī", meaning: "undergo", ch: 29 },
+  { inf: "suādēre", perf1: "suāsī", meaning: "advise", ch: 29 },
+  { inf: "stupēre", perf1: "stupuī", meaning: "be aghast", ch: 29 },
+  { inf: "secāre", perf1: "secuī", meaning: "cut", ch: 29 },
+  { inf: "remanēre", perf1: "remānsī", meaning: "remain", ch: 29 },
+  { inf: "redūcere", perf1: "redūxī", meaning: "lead back", ch: 29 },
+  { inf: "recognōscere", perf1: "recognōvī", meaning: "recognize", ch: 29 },
+  { inf: "perturbāre", perf1: "perturbāvī", meaning: "disturb", ch: 29 },
+  { inf: "permovēre", perf1: "permōvī", meaning: "move deeply", ch: 29 },
+  { inf: "parcere", perf1: "pepercī", meaning: "spare", ch: 29 },
+  { inf: "invidēre", perf1: "invīdī", meaning: "envy", ch: 29 },
+  { inf: "fīnīre", perf1: "fīnīvī", meaning: "finish", ch: 29 },
+  { inf: "expōnere", perf1: "exposuī", meaning: "expose", ch: 29 },
+  { inf: "ēripere", perf1: "ēripuī", meaning: "snatch away", ch: 29 },
+  { inf: "dōnāre", perf1: "dōnāvī", meaning: "present", ch: 29 },
+  { inf: "dētrahere", perf1: "dētraxī", meaning: "pull off", ch: 29 },
+  { inf: "dēterrēre", perf1: "dēterruī", meaning: "deter", ch: 29 },
+  { inf: "dēspērāre", perf1: "dēspērāvī", meaning: "despair", ch: 29 },
+  { inf: "dēsilīre", perf1: "dēsiluī", meaning: "jump down", ch: 29 },
+  { inf: "appropinquāre", perf1: "appropinquāvī", meaning: "approach", ch: 29 },
+  { inf: "appārēre", perf1: "appāruī", meaning: "appear", ch: 29 },
+  { inf: "āmittere", perf1: "āmīsī", meaning: "lose", ch: 29 },
+  { inf: "allicere", perf1: "allexī", meaning: "attract", ch: 29 },
+  { inf: "afficere", perf1: "affēcī", meaning: "affect", ch: 29 },
+  { inf: "adicere", perf1: "adiēcī", meaning: "add", ch: 29 },
+  { inf: "abstinēre", perf1: "abstinuī", meaning: "keep off", ch: 29 },
+  { inf: "abicere", perf1: "abiēcī", meaning: "throw away", ch: 29 },
+  { inf: "vīsere", perf1: "vīsī", meaning: "visit", ch: 30 },
+  { inf: "sternere", perf1: "strāvī", meaning: "spread", ch: 30 },
+  { inf: "requiēscere", perf1: "requiēvī", meaning: "rest", ch: 30 },
+  { inf: "recipere", perf1: "recēpī", meaning: "receive", ch: 30 },
+  { inf: "pōtāre", perf1: "pōtāvī", meaning: "drink", ch: 30 },
+  { inf: "placēre", perf1: "placuī", meaning: "please", ch: 30 },
+  { inf: "parāre", perf1: "parāvī", meaning: "prepare", ch: 30 },
+  { inf: "nūntiāre", perf1: "nūntiāvī", meaning: "announce", ch: 30 },
+  { inf: "miscēre", perf1: "miscuī", meaning: "mix", ch: 30 },
+  { inf: "līberāre", perf1: "līberāvī", meaning: "free", ch: 30 },
+  { inf: "gustāre", perf1: "gustāvī", meaning: "taste", ch: 30 },
+  { inf: "fundere", perf1: "fūdī", meaning: "pour", ch: 30 },
+  { inf: "exōrnāre", perf1: "exōrnāvī", meaning: "decorate", ch: 30 },
+  { inf: "exhaurīre", perf1: "exhausī", meaning: "drain", ch: 30 },
+  { inf: "ēligere", perf1: "ēlēgī", meaning: "choose", ch: 30 },
+  { inf: "coquere", perf1: "coxī", meaning: "cook", ch: 30 },
+  { inf: "contrahere", perf1: "contraxī", meaning: "draw together", ch: 30 },
+  { inf: "complēre", perf1: "complēvī", meaning: "fill", ch: 30 },
+  { inf: "cēnāre", perf1: "cēnāvī", meaning: "dine", ch: 30 },
+  { inf: "aspergere", perf1: "aspersī", meaning: "sprinkle", ch: 30 },
+  { inf: "apportāre", perf1: "apportāvī", meaning: "bring", ch: 30 },
+  { inf: "accumbere", perf1: "accubuī", meaning: "recline at table", ch: 30 },
+  { inf: "vetāre", perf1: "vetuī", meaning: "forbid", ch: 31 },
+  { inf: "statuere", perf1: "statuī", meaning: "determine", ch: 31 },
+  { inf: "retrahere", perf1: "retraxī", meaning: "pull back", ch: 31 },
+  { inf: "optāre", perf1: "optāvī", meaning: "wish", ch: 31 },
+  { inf: "latēre", perf1: "latuī", meaning: "be hidden", ch: 31 },
+  { inf: "īgnōscere", perf1: "īgnōvī", meaning: "forgive", ch: 31 },
+  { inf: "ēducāre", perf1: "ēducāvī", meaning: "educate", ch: 31 },
+  { inf: "cruciāre", perf1: "cruciāvī", meaning: "torture", ch: 31 },
+  { inf: "aufugere", perf1: "aufūgī", meaning: "escape", ch: 31 },
+  { inf: "abdūcere", perf1: "abdūxī", meaning: "carry off", ch: 31 },
+  { inf: "submergere", perf1: "submersī", meaning: "sink", ch: 32 },
+  { inf: "repugnāre", perf1: "repugnāvī", meaning: "resist", ch: 32 },
+  { inf: "rēmigāre", perf1: "rēmigāvī", meaning: "row", ch: 32 },
+  { inf: "redimere", perf1: "redēmī", meaning: "ransom", ch: 32 },
+  { inf: "flectere", perf1: "flexī", meaning: "bend", ch: 32 },
+  { inf: "ēdūcere", perf1: "ēdūxī", meaning: "bring out", ch: 32 },
+  { inf: "dissuādēre", perf1: "dissuāsī", meaning: "advise against", ch: 32 },
+  { inf: "dēsistere", perf1: "dēstitī", meaning: "cease", ch: 32 },
+  { inf: "contemnere", perf1: "contempsī", meaning: "despise", ch: 32 },
+  { inf: "armāre", perf1: "armāvī", meaning: "arm", ch: 32 },
+  { inf: "adiuvāre", perf1: "adiūvī", meaning: "help", ch: 32 },
+  { inf: "vulnerāre", perf1: "vulnerāvī", meaning: "wound", ch: 33 },
+  { inf: "trānsīre", perf1: "trānsiī", meaning: "cross", ch: 33 },
+  { inf: "studēre", perf1: "studuī", meaning: "devote oneself", ch: 33 },
+  { inf: "properāre", perf1: "properāvī", meaning: "hasten", ch: 33 },
+  { inf: "prōcurrere", perf1: "prōcurrī", meaning: "charge", ch: 33 },
+  { inf: "praestāre", perf1: "praestitī", meaning: "furnish", ch: 33 },
+  { inf: "mūnīre", perf1: "mūnīvī", meaning: "fortify", ch: 33 },
+  { inf: "īnstruere", perf1: "īnstrūxī", meaning: "arrange", ch: 33 },
+  { inf: "fatīgāre", perf1: "fatīgāvī", meaning: "tire out", ch: 33 },
+  { inf: "excurrere", perf1: "excucurrī", meaning: "rush out", ch: 33 },
+  { inf: "ērumpere", perf1: "ērūpī", meaning: "break out", ch: 33 },
+  { inf: "effundere", perf1: "effūdī", meaning: "pour out", ch: 33 },
+  { inf: "dēsīderāre", perf1: "dēsīderāvī", meaning: "long for", ch: 33 },
+  { inf: "cōpulāre", perf1: "cōpulāvī", meaning: "join", ch: 33 },
+  { inf: "convocāre", perf1: "convocāvī", meaning: "call together", ch: 33 },
+  { inf: "commemorāre", perf1: "commemorāvī", meaning: "mention", ch: 33 },
+  { inf: "cōgere", perf1: "coēgī", meaning: "compel", ch: 33 },
+  { inf: "caedere", perf1: "cecīdī", meaning: "fell, kill", ch: 33 },
+  { inf: "adiungere", perf1: "adiūnxī", meaning: "join to", ch: 33 },
+  { inf: "sapere", perf1: "sapīvī", meaning: "be wise", ch: 34 },
+  { inf: "requīrere", perf1: "requīsīvī", meaning: "seek", ch: 34 },
+  { inf: "prōsilīre", perf1: "prōsiluī", meaning: "spring forth", ch: 34 },
+  { inf: "plaudere", perf1: "plausī", meaning: "clap", ch: 34 },
+  { inf: "ōscitāre", perf1: "ōscitāvī", meaning: "yawn", ch: 34 },
+  { inf: "nūbere", perf1: "nūpsī", meaning: "marry", ch: 34 },
+  { inf: "lūgēre", perf1: "lūxī", meaning: "mourn", ch: 34 },
+  { inf: "laedere", perf1: "laesī", meaning: "injure", ch: 34 },
+  { inf: "implicāre", perf1: "implicāvī", meaning: "enfold", ch: 34 },
+  { inf: "favēre", perf1: "fāvī", meaning: "favor", ch: 34 },
+  { inf: "excruciāre", perf1: "excruciāvī", meaning: "torment", ch: 34 },
+  { inf: "ērubēscere", perf1: "ērubuī", meaning: "blush", ch: 34 },
+  { inf: "ēlīdere", perf1: "ēlīsī", meaning: "elide", ch: 34 },
+  { inf: "dēvorāre", perf1: "dēvorāvī", meaning: "devour", ch: 34 },
+  { inf: "conturbāre", perf1: "conturbāvī", meaning: "confound", ch: 34 },
+  { inf: "circumsilīre", perf1: "circumsiluī", meaning: "hop about", ch: 34 },
+  { inf: "certāre", perf1: "certāvī", meaning: "contend", ch: 34 },
+  { inf: "affirmāre", perf1: "affirmāvī", meaning: "affirm", ch: 34 },
+  { inf: "accendere", perf1: "accendī", meaning: "light, inflame", ch: 34 },
+  { inf: "ōrdināre", perf1: "ōrdināvī", meaning: "arrange", ch: 35 },
+  { inf: "explānāre", perf1: "explānāvī", meaning: "explain", ch: 35 },
+  { inf: "dēmere", perf1: "dēmpsī", meaning: "remove", ch: 35 },
+  { inf: "adnectere", perf1: "adnexuī", meaning: "attach", ch: 35 },
+];
+
+const PP_MAP = {
+  "esse": "sum, esse, fuī, futūrus",
+  "vocāre": "vocō, vocāre, vocāvī, vocātum",
+  "vidēre": "videō, vidēre, vīdī, vīsum",
+  "verberāre": "verberō, verberāre, verberāvī, verberātum",
+  "venīre": "veniō, venīre, vēnī, ventum",
+  "rīdēre": "rīdeō, rīdēre, rīsī, rīsum",
+  "respondēre": "respondeō, respondēre, respondī, respōnsum",
+  "pulsāre": "pulsō, pulsāre, pulsāvī, pulsātum",
+  "plōrāre": "plorō, plōrāre, plorāvī, plorātum",
+  "interrogāre": "interrogō, interrogāre, interrogāvī, interrogātum",
+  "dormīre": "dormiō, dormīre, dormīvī, dormītum",
+  "cantāre": "cantō, cantāre, cantāvī, cantātum",
+  "audīre": "audiō, audīre, audīvī, audītum",
+  "tacēre": "taceō, tacēre, tacuī, tacitum",
+  "sūmere": "sūmō, sūmere, sūmpsī, sūmptum",
+  "salūtāre": "salutō, salūtāre, salutāvī, salutātus",
+  "pōnere": "pōnō, pōnere, posuī, positum",
+  "pārēre": "pāreō, pārēre, pāruī, pāritum",
+  "numerāre": "numerō, numerāre, numerāvī, numerātum",
+  "habēre": "habeō, habēre, habuī, habitum",
+  "discēdere": "discēdō, discēdere, discessī, discessum",
+  "adesse": "adsum, adesse, adfuī, adfutūrus",
+  "accūsāre": "accūsō, accūsāre, accūsāvī, accūsātum",
+  "abesse": "absum, abesse, āfuī, āfutūrus",
+  "imperāre": "imperō, imperāre, imperāvī, imperātum",
+  "habitāre": "habito, habitāre, habitavi, habitatus",
+  "dēlectāre": "dēlectō, dēlectāre, dēlectāvī, dēlectātum delight",
+  "carpere": "carpō, carpere, carpsī, carptum",
+  "agere": "agō, agere, ēgī, āctum",
+  "vehere": "vehō, vehere, vēxī, vectum",
+  "timēre": "timeō, timēre, timuī",
+  "portāre": "portō, portāre, portāvī, portātum",
+  "īre": "eō, īre, iī, itum",
+  "intrāre": "intrō, intrāre, intrāvī, intrātum enter",
+  "ambulāre": "ambulō, ambulāre, ambulāvī, ambulātum",
+  "vertere": "vertō, vertere, vertī, versum",
+  "tergēre": "tergeō, tergēre, tersī, tersum",
+  "tenēre": "teneō, tenēre, tenuī, tentum",
+  "lacrimāre": "lacrimō, lacrimāre, lacrimāvī, lacrimātum",
+  "exspectāre": "exspectō, exspectāre, exspectāvī",
+  "exīre": "exeō, exīre, exiī, exitum",
+  "dare": "dō, dare, dedī, datum",
+  "currere": "currō, currere, cucurri, cursum",
+  "claudere": "claudō, claudere, clausī, clausum",
+  "aperīre": "aperiō, aperīre, aperuī, apertum",
+  "advenīre": "adveniō, advenīre, advēnī, adventum",
+  "adīre": "adeō, adīre, adiī, aditum",
+  "vēndere": "vēndō, vēndere, vēndidī, vēnditum",
+  "ostendere": "ostendō, ostendere, ostendī, ostentum",
+  "ōrnāre": "ōrnō, ōrnāre, ōrnāvī, ōrnātum",
+  "mōnstrāre": "mōnstrō, mōnstrāre, mōnstrāvī, mōnstrātum",
+  "emere": "emō, emere, ēmī, ēmptum",
+  "convenīre": "conveniō, convenīre, convēnī, conventum",
+  "cōnstāre": "cōnstō, cōnstāre, cōnstitī, cōnstātum",
+  "cōnsistere": "cōnsistō, cōnsistere, cōnstitī, cōnstitum",
+  "clāmāre": "clāmō, clāmāre, clāmāvī, clāmātum",
+  "aspicere": "aspiciō, aspicere, aspexī, aspectum",
+  "accipere": "accipiō, accipere, accēpī, acceptum receive",
+  "abīre": "abeō, abīre, abiī, abitum",
+  "ululāre": "ululō, ululāre, ululāvī, ululātum",
+  "reperīre": "reperiō, reperīre, repperī, repertum nd",
+  "relinquere": "relinquō, relinquere, relīquī, relictum",
+  "quaerere": "quaerō, quaerere, quaesīvī, quaesītum",
+  "petere": "petō, petere, petīvī, petītum",
+  "lūcēre": "lūceō, lūcēre, luxī",
+  "lātrāre": "lātrō, lātrāre, lātrāvī, lātrātum",
+  "impōnere": "impōnō, impōnere, imposuī",
+  "iacēre": "iaceō, iacēre, iacuī, iacitum lie",
+  "errāre": "errō, errāre, errāvī, errātum",
+  "dūcere": "dūcō, dūcere, dūxī, ductum",
+  "dēclīnāre": "dēclīnō, dēclīnāre, dēclīnāvī, dēclīnātum",
+  "bibere": "bibō, bibere, bibī, bibitum",
+  "bālāre": "bālō, bālāre, bālāvī, bālātum",
+  "accurrere": "accurrō, accurrere, accucurrī",
+  "velle": "volō, velle, voluī",
+  "vīvere": "vīvō, vīvere, vīxī, vīctum",
+  "volāre": "volō, volāre, volāvī, volātum",
+  "sustinēre": "sustineō, sustinēre, sustinuī, sustentum",
+  "spīrāre": "spīrō, spīrāre, spīrāvī, spīrātum",
+  "parere": "pariō, parere, peperī, partum",
+  "occultāre": "occultō, occultāre, occultāvī, occultātum",
+  "natāre": "natō, natāre, natāvī, natātum",
+  "movēre": "moveō, movēre, mōvī, mōtum",
+  "lūdere": "lūdō, lūdere, lūsī, lūsum",
+  "facere": "faciō, facere, fēcī, factum",
+  "capere": "capiō, capere, cēpī, captum",
+  "canere": "canō, canere, cecinī",
+  "cadere": "cadō, cadere, cecidī, cāsum",
+  "ascendere": "ascendō, ascendere, ascendī, ascēnsum",
+  "tangere": "tangō, tangere, tetigī, tāctum",
+  "stāre": "stō, stāre, stetī, statum",
+  "spectāre": "spectāre",
+  "sentīre": "sentiō, sentīre, sēnsī, sēnsum",
+  "sedēre": "sedeō, sedēre, sēdī, sessum",
+  "sānāre": "sānō, sānāre, sānāvī, sānātum",
+  "revenīre": "reveniō, revenīre, revēnī, reventum",
+  "putāre": "putō, putāre, putāvī, putātum",
+  "palpitāre": "palpitō, palpitāre, palpitāvī, palpitātum",
+  "iubēre": "iubeō, iubēre, iussī, iussum",
+  "fluere": "fluō, fluere, fluxī, fluxum",
+  "dolēre": "doleō, dolēre, doluī, dolitum",
+  "dīcere": "dīcō, dīcere, dīxī, dictum",
+  "dētergēre": "dētergeō, dētergēre, dētersī, dētersum",
+  "arcessere": "arcessō, arcessere, arcessīvī, arcessītum",
+  "appōnere": "appōnō, appōnere, apposuī",
+  "aegrōtāre": "aegrōtō, aegrōtāre, aegrōtāvī, aegrōtātum",
+  "pugnāre": "pugnō, pugnāre, pugnāvī, pugnātum ght",
+  "oppugnāre": "oppugnō, oppugnāre, oppugnāvī, oppugnātum",
+  "mīlitāre": "mīlitō, mīlitāre, mīlitāvī, mīlitātum",
+  "metuere": "metuō, metuere, metuī, metūtum",
+  "incolere": "incolō, incolere, incoluī",
+  "iacere": "iaciō, iacere, iēcī, iactum",
+  "fugere": "fugiō, fugere, fūgī, fugitum",
+  "ferre": "ferō, ferre, tulī, lātum",
+  "expugnāre": "expugnō, expugnāre, expugnāvī, expugnātum",
+  "dīvidere": "dīvidō, dīvidere, dīvīsī, dīvīsum",
+  "dēfendere": "dēfendō, dēfendere, dēfendī, dēfensum",
+  "operīre": "operiō, operīre, operuī, opertum",
+  "nōmināre": "nōminō, nōmināre, nōmināvī, nōminātum",
+  "incipere": "incipiō, incipere, incēpī, inceptum",
+  "illūstrāre": "illūstrō, illūstrāre, illūstrāvī, illūstrātum",
+  "vigilāre": "vigilō, vigilāre, vigilāvī, vigilātum",
+  "vestīre": "vestiō, vestīre, vestīvī, vestītum",
+  "valēre": "valeō, valēre, valuī",
+  "surgere": "surgō, surgere, surrexī, surrectum",
+  "poscere": "poscō poscere poposci",
+  "mergere": "mergō, mergere, mersī, mersum dip",
+  "lavāre": "lavō, lavāre, lāvī, lavātum",
+  "induere": "induō, induere, induī",
+  "gerere": "gerō, gerere, gessī, gestum",
+  "excitāre": "excitō, excitāre, excitāvī, excitātum",
+  "cubāre": "cubō, cubāre, cubuī",
+  "afferre": "afferō, afferre, attulī, allātum",
+  "redīre": "redeō, redīre, rediī, reditum",
+  "reddere": "reddō, reddere, reddidī, redditum",
+  "recitāre": "recitō, recitāre, recitāvī, recitātum",
+  "pūnīre": "pūniō, pūnīre, pūnīvī",
+  "exclāmāre": "exclāmō, exclāmāre, exclāmāvī, exclāmātum",
+  "dēsinere": "dēsinō, dēsinere, dēsiī, dēsitum nish",
+  "cōnsīdere": "cōnsīdō, cōnsīdere, cōnsēdī, cōnsēssum",
+  "turbāre": "turbō, turbāre, turbāvī, turbātum stir",
+  "servāre": "servō, servāre, servāvī, servātum",
+  "occidere": "occidō, occidere, occīdī, occāsum",
+  "nāvigāre": "nāvigō, nāvigāre, nāvigāvī, nāvigātum",
+  "invocāre": "invocō, invocāre, invocāvī, invocātum",
+  "interesse": "intersum, interesse, interfuī, interfutūrus",
+  "īnfluere": "īnfluō, īnfluere, īnfluxī, īnfluxum",
+  "implēre": "impleō, implēre, implēvī, implētum ll",
+  "iactāre": "iactō, iactāre, iactāvī, iactātum",
+  "haurīre": "hauriō, haurīre, hausī",
+  "gubernāre": "gubernō, gubernāre, gubernāvī, gubernātum",
+  "flāre": "flō, flāre, flāvī, flātum",
+  "cōnscendere": "cōnscendō, cōnscendere, cōnscendī, cōnscēnsum",
+  "cernere": "cernō, cernere, crēvī, crētum",
+  "appellāre": "appellō, appellāre, appellāvī, appellātum",
+  "tollere": "tollō, tollere, sustulī, sublātum",
+  "scīre": "sciō, scīre, scīvī, scītum",
+  "reprehendere": "reprehendō, reprehendere, reprehendī, reprehēnsum",
+  "repōnere": "repōnō, repōnere, reposuī, repositum put",
+  "prōmere": "prōmō, prōmere, prōmpsī, prōmptum",
+  "nescīre": "nesciō, nescīre, nescīvī, nescītum",
+  "laudāre": "laudō, laudāre, laudāvī, laudātum",
+  "interpellāre": "interpellō, interpellāre, interpellāvī, interpellātum",
+  "docēre": "doceō, docēre, docuī, doctum",
+  "discere": "discō, discere, didicī, discitum",
+  "dēmōnstrāre": "dēmōnstrō, dēmōnstrāre, dēmōnstrāvī, dēmōnstrātum",
+  "computāre": "computō, computāre, computāvi, computātum",
+  "cōgitāre": "cōgitō, cōgitāre, cōgitāvī, cōgitātum",
+  "superesse": "supersum, superesse, superfuī, superfutūrus",
+  "significāre": "significō, significāre, significāvī, significātum",
+  "signāre": "signō, signāre, signāvī, signātum",
+  "scrībere": "scrībō, scrībere, scrīpsī, scrīptum",
+  "premere": "premō, premere, pressī, pressum",
+  "legere": "legō, legere, lēgī, lēctum",
+  "iungere": "iungō, iungere, iūnxī, iūnctum",
+  "intellegere": "intellegō, intellegere, intellēxī, intellēctum",
+  "imprimere": "imprimō, imprimere, impressī",
+  "exaudīre": "exaudiō, exaudīre, exaudīvī, exaudītum",
+  "efficere": "efficiō, efficere, effēcī, effectum",
+  "dictāre": "dictō, dictāre, dictāvī, dictātum",
+  "dēlēre": "dēleō, dēlēre, dēlēvī, dēlētum",
+  "deesse": "dēsum, deesse, dēfuī",
+  "corrigere": "corrigō, corrigere, correxī, correctum",
+  "comparāre": "comparō, comparāre, comparāvī, comparātum",
+  "animadvertere": "animadvertō, animadvertere, animadvertī, animadversum",
+  "addere": "addō, addere, addidī, additum",
+  "coniungere": "coniungō, coniungere, coniunxī, coniunctum",
+  "remittere": "remittō, remittere, remīsī, remissum",
+  "possidēre": "possideō, possidēre, possēdī, possessum",
+  "mittere": "mittō, mittere, mīsī, missum",
+  "minuere": "minuō, minuere, minuī, minūtum",
+  "augēre": "augeō, augēre, auxī, auctum",
+  "vāgīre": "vāgiō, vāgīre, vāgīvī",
+  "silēre": "sileō, silēre, siluī",
+  "postulāre": "postulō, postulāre, postulāvī, postulātum",
+  "pergere": "pergō, pergere, perrexī, perrectum",
+  "occurrere": "occurrō, occurrere, occurrī, occursum",
+  "manēre": "maneō, manēre, mānsī, mānsum",
+  "dīligere": "dīligō, dīligere, dīlēxī, dīlēctum",
+  "dēbēre": "dēbeō, dēbēre, dēbuī, dēbitum",
+  "cūrāre": "cūrō, cūrāre, cūrāvī, cūrātum",
+  "carēre": "careō, carēre, caruī, caritum",
+  "alere": "alō, alere, aluī, alitum",
+  "advehere": "advehō, advehere, advexī, advectum",
+  "vincere": "vincō, vincere, vīcī, victum",
+  "nārrāre": "nārrō, nārrāre, nārrāvī, nārratum",
+  "mūtāre": "mūtō, mūtāre, mūtāvī, mūtātum",
+  "fallere": "fallō, fallere, fefellī, falsum",
+  "excūsāre": "excūsō, excūsāre, excūsāvī, excusātum",
+  "dubitāre": "dubitō, dubitāre, dubitāvī, dubitātum",
+  "crēdere": "crēdō, crēdere, crēdidī, crēditum",
+  "cōnspicere": "cōnspiciō, cōnspicere, cōnspexī, cōnspectum catch",
+  "cognōscere": "cognōscō, cognōscere, cognōvī, cognitum get",
+  "vincīre": "vinciō, vincīre, vinxī, vinctum",
+  "tremere": "tremō, tremere, tremuī, tremitum",
+  "terrēre": "terreō, terrēre, terruī, territum",
+  "solvere": "solvō, solvere, solvī, solūtum",
+  "sinere": "sinō, sinere, sīvī, situm let",
+  "scindere": "scindō, scindere, scidī, scissum",
+  "salīre": "saliō, salīre, saluī, saltum",
+  "rumpere": "rumpō, rumpere, rūpī, ruptum",
+  "rogitāre": "rogitō, rogitāre, rogitāvī",
+  "retinēre": "retineō, retinēre, retinuī, retentum",
+  "resistere": "resistō, resistere, restitī",
+  "removēre": "removeō, removēre, remōvī, remōtum",
+  "recēdere": "recēdō, recēdere, recessī, recessum",
+  "prōcēdere": "prōcēdō, prōcēdere, prōcessī, prōcessum",
+  "prehendere": "prehendō, prehendere, prehendī, prehensum grasp",
+  "pellere": "pellō, pellere, pepulī, pulsum",
+  "mordēre": "mordeō, mordēre, momordī, morsum",
+  "monēre": "moneō, monēre, monuī, monitum",
+  "fremere": "fremō, fremere, fremuī, fremitum",
+  "dērīdēre": "dērīdeō, dērīdēre, dērīsī, dērīsum",
+  "cūstōdīre": "cūstōdiō, cūstōdīre, cūstōdīvī, cūstōdītum",
+  "cēdere": "cēdō, cēdere, cessī",
+  "cavēre": "caveō, cavēre, cāvī",
+  "admittere": "admittō, admittere, admīsī, admissum let",
+  "accēdere": "accēdō, accēdere, accessī, accessum",
+  "trādere": "trādō, trādere, trādidī, trāditum hand",
+  "rubēre": "rubeō, rubēre, rubuī",
+  "prōmittere": "prōmittō, prōmittere, prōmīsī, prōmissum",
+  "pallēre": "palleō, pallēre, palluī",
+  "negāre": "negō, negāre, negāvī, negātum",
+  "merēre": "mereō, merēre, meruī, meritum",
+  "īnscrībere": "īnscrībō, īnscrībere, īnscrīpsī, īnscrīptum",
+  "inclūdere": "inclūdō, inclūdere, inclūsī, inclūsum",
+  "dīmittere": "dīmittō, dīmittere, dīmīsī, dīmissum",
+  "continēre": "contineō, continēre, continuī, contentum",
+  "āvertere": "āvertō, āvertere, āvertī, āversum",
+  "recumbere": "recumbō, recumbere, recubuī lie",
+  "nōscere": "nōscō, nōscere, nōvī, nōtum get",
+  "ignōrāre": "ignōrō, ignōrāre, ignōrāvī, ignōrātum",
+  "frangere": "frangō, frangere, frēgī, frāctum",
+  "flēre": "fleō, flēre, flēvī, flētum",
+  "cupere": "cupiō, cupere, cupīvī, cupītum",
+  "convertere": "convertō, convertere, convertī, conversum",
+  "vorāre": "vorō, vorāre, vorāvī, vorātum swallow",
+  "trahere": "trahō, trahere, trāxī, tractum",
+  "regere": "regō, regere, rēxī, rēctum direct",
+  "prōspicere": "prōspiciō, prōspicere, prōspexī, prōspectum",
+  "patēre": "pateō, patēre, patuī lie",
+  "occīdere": "occīdō, occīdere, occīdī, occīsum",
+  "necāre": "necō, necāre, necāvī, necātum",
+  "interficere": "interficiō, interficere, interfēcī, interfectum",
+  "dēserere": "dēserō, dēserere, dēseruī, dēsertum",
+  "dēscendere": "dēscendō, dēscendere, dēscendī, dēscēnsum",
+  "cōnstituere": "cōnstituō, cōnstituere, cōnstituī, cōnstitūtum",
+  "ūrere": "ūrō, ūrere, ussī, ustum",
+  "revocāre": "revocō, revocāre, revocāvī, revocātum",
+  "mollīre": "molliō, mollīre, mollīvī, mollītum",
+  "levāre": "levō, levāre, levāvī, levātum",
+  "iuvāre": "iuvō, iuvāre, iūvī, iūtum",
+  "invenīre": "inveniō, invenīre, invēnī, inventum nd",
+  "fīgere": "fīgō, fīgere, fīxī, fīxum",
+  "excōgitāre": "excōgitō, excōgitāre, excōgitāvī, excōgitātum",
+  "ēvolāre": "ēvolō, ēvolāre, ēvolāvī, ēvolātum",
+  "effugere": "effugiō, effugere, effūgī, effugitum",
+  "dēspicere": "dēspiciō, dēspicere, dēspexī",
+  "cōnsūmere": "cōnsūmō, cōnsūmere, cōnsūmpsī, cōnsūmptum spend",
+  "cōnficere": "cōnficiō, cōnficere, cōnfēcī, cōnfectum",
+  "accidere": "accidō, accidere, accidī",
+  "aberrāre": "aberrō, aberrāre, aberrāvī, aberrātum",
+  "suspicere": "suspiciō, suspicere, suspexi",
+  "serere": "serō, serere, sēvī, satum",
+  "rigāre": "rigō, rigāre, rigāvī, rigātum",
+  "rapere": "rapiō, rapere, rapuī, raptum",
+  "quiēscere": "quiēscō, quiēscere, quiēvī, quiētum",
+  "prōicere": "prōiciō, prōicere, proieci",
+  "prohibēre": "prohibeō, prohibēre, prohibuī, prohibitum",
+  "pāscere": "pāscō, pāscere, pāvī, pāstum",
+  "ōrāre": "ōrō, ōrāre, ōrāvī, ōrātum",
+  "nocēre": "noceō, nocēre, nocuī, nocitum",
+  "neglegere": "neglegō, neglegere, neglēxī, neglēctum",
+  "metere": "metō, metere, messuī, messum",
+  "labōrāre": "labōrō, labōrāre, labōrāvī, labōrātum",
+  "invehere": "invehō, invehere, invexī, invectum",
+  "exīstimāre": "exīstimō, exīstimāre, exīstimāvī, exīstimātum",
+  "crēscere": "crēscō, crēscere, crēvī, crētum",
+  "colere": "colō, colere, coluī, cultum",
+  "cingere": "cingō, cingere, cinxī, cinctum",
+  "cēnsēre": "cēnseō, cēnsēre, cēnsuī, cēnsum",
+  "arāre": "arō, arāre, arāvī, arātum",
+  "vītāre": "vītō, vītāre, vītāvī, vītātum",
+  "suscitāre": "suscitō, suscitāre, suscitāvī, suscitātus",
+  "spērāre": "spērō, spērāre, spērāvī",
+  "servīre": "serviō, servīre, servīvī, servītum",
+  "salvāre": "salvō, salvāre, salvāvī, salvātum",
+  "rogāre": "rogō, rogāre, rogāvī, rogātum",
+  "rēgnāre": "rēgnō, rēgnāre, rēgnāvī, rēgnātum",
+  "pervenīre": "perveniō, pervenīre, pervēnī, perventum get",
+  "persuādēre": "persuādeō, persuādēre, persuāsī, persuāsum",
+  "perīre": "pereō, perīre, periī",
+  "oboedīre": "oboediō, oboedīre, oboedīvī, oboedītum",
+  "memorāre": "memorō, memorāre, memorāvī, memorātum",
+  "extendere": "extendō, extendere, extendī, extentum",
+  "ēvolvere": "ēvolvō, ēvolvere, ēvolvī, ēvolūtum",
+  "ēicere": "ēiciō, ēicere, ēiēcī, ēiectum",
+  "disiungere": "disiungō, disiungere, disiūnxī, disiūnctum",
+  "cessāre": "cessō, cessāre, cessāvī, cessātum",
+  "apprehendere": "apprehendō, apprehendere, apprehendī, apprehēnsum",
+  "adōrāre": "adōrō, adōrāre, adōrāvī, adōrātum",
+  "surripere": "surripiō, surripere, surripui, surreptum",
+  "subīre": "subeō, subīre, subiī, subitum",
+  "suādēre": "suādeō, suādēre, suāsī, suāsum",
+  "stupēre": "stupeō, stupēre, stupuī, stupītum",
+  "secāre": "secō, secāre, secuī, sectum",
+  "remanēre": "remaneō, remanēre, remānsī, remānsum",
+  "redūcere": "redūcō, redūcere, redūxī, reductum",
+  "recognōscere": "recognōscō, recognōscere, recognōvī, recognitum",
+  "perturbāre": "perturbō, perturbāre, perturbāvī, perturbātum",
+  "permovēre": "permoveō, permovēre, permōvī, permōtum",
+  "parcere": "parcō, parcere, pepercī",
+  "invidēre": "invideō, invidēre, invīdī, invīsum",
+  "fīnīre": "fīniō, fīnīre, fīnīvī, fīnītum limit",
+  "expōnere": "expōnō, expōnere, exposuī, expositum put",
+  "ēripere": "ēripiō, ēripere, ēripuī, ēreptum",
+  "dōnāre": "dōnō, dōnāre, dōnāvī, dōnātum",
+  "dētrahere": "dētrahō, dētrahere, dētraxī, dētractum",
+  "dēterrēre": "dēterreō, dēterrēre, dēterruī, dēterritum",
+  "dēspērāre": "dēspērō, dēspērāre, dēspērāvī, dēspērātum",
+  "dēsilīre": "dēsiliō, dēsilīre, dēsiluī, dēsultum",
+  "appropinquāre": "appropinquō, appropinquāre, appropinquāvī, appropinquātum",
+  "appārēre": "appāreō, appārēre, appāruī, appāritum",
+  "āmittere": "āmittō, āmittere, āmīsī, āmissum",
+  "allicere": "alliciō, allicere, allexī, allectum",
+  "afficere": "afficiō, afficere, affēcī, affectum",
+  "adicere": "adiciō, adicere, adiēcī, adiectum",
+  "abstinēre": "abstineō, abstinēre, abstinuī, abstentum",
+  "abicere": "abiciō, abicere, abiēcī, abiectum",
+  "vīsere": "vīsō, vīsere, vīsī, vīsum",
+  "sternere": "sternō, sternere, strāvī, strātum",
+  "requiēscere": "requiēscō, requiēscere, requiēvī, requiētum",
+  "recipere": "recipiō, recipere, recēpī, receptum receive",
+  "pōtāre": "pōtō, pōtāre, pōtāvī, pōtum",
+  "placēre": "placeō, placēre, placuī, placitum please",
+  "parāre": "parō, parāre, parāvī, parātum",
+  "nūntiāre": "nūntiō, nūntiāre, nūntiāvī, nūntiātum",
+  "miscēre": "misceō, miscēre, miscuī, mixtum",
+  "līberāre": "līberō, līberāre, līberāvī, līberātum",
+  "gustāre": "gustō, gustāre, gustāvī, gustātum",
+  "fundere": "fundō, fundere, fūdī, fūsum",
+  "exōrnāre": "exōrnō, exōrnāre, exōrnāvī, exōrnātum",
+  "exhaurīre": "exhauriō, exhaurīre, exhausī, exhaustum",
+  "ēligere": "ēligō, ēligere, ēlēgī, ēlēctum",
+  "coquere": "coquō, coquere, coxī, coctum",
+  "contrahere": "contrahō, contrahere, contraxī, contractum",
+  "complēre": "compleō, complēre, complēvī, complētum ll",
+  "cēnāre": "cēnō, cēnāre, cēnāvī, cēnātum",
+  "aspergere": "aspergō, aspergere, aspersī, aspersum",
+  "apportāre": "apportō, apportāre, apportāvī, apportātum",
+  "accumbere": "accumbō, accumbere, accubuī, accubitum lie",
+  "vetāre": "vetō, vetāre, vetuī, vetitum",
+  "statuere": "statuō, statuere, statuī, statūtum",
+  "retrahere": "retrahō, retrahere, retraxī, retractum",
+  "optāre": "optō, optāre, optāvī, optātum",
+  "latēre": "lateō, latēre, latuī",
+  "īgnōscere": "īgnōscō, īgnōscere, īgnōvī",
+  "ēducāre": "ēducō, ēducāre, ēducāvī, ēducātum",
+  "cruciāre": "cruciō, cruciāre, cruciāvī, cruciātum",
+  "aufugere": "aufugiō, aufugere, aufūgī",
+  "abdūcere": "abdūcō, abdūcere, abdūxī, abductum",
+  "submergere": "submergō, submergere, submersī, submersum",
+  "repugnāre": "repugnō, repugnāre, repugnāvī, repugnātum ght",
+  "rēmigāre": "rēmigō, rēmigāre, rēmigāvī, rēmigātum",
+  "redimere": "redimō, redimere, redēmī, redemptum",
+  "flectere": "flectō, flectere, flexī, flexum",
+  "ēdūcere": "ēdūcō, ēdūcere, ēdūxī, ēductum",
+  "dissuādēre": "dissuādeō, dissuādēre, dissuāsī, dissuāsum",
+  "dēsistere": "dēsistō, dēsistere, dēstitī, dēstitum",
+  "contemnere": "contemnō, contemnere, contempsī, contemptum",
+  "armāre": "armō, armāre, armāvī, armātum",
+  "adiuvāre": "adiuvō, adiuvāre, adiūvī, adiūtum",
+  "vulnerāre": "vulnerō, vulnerāre, vulnerāvī, vulnerātum",
+  "trānsīre": "trānseō, trānsīre, trānsiī, trānsitum",
+  "studēre": "studeō, studēre",
+  "properāre": "properō, properāre, properāvī, properātum",
+  "prōcurrere": "prōcurrō, prōcurrere, prōcurrī, prōcursum",
+  "praestāre": "praestō, praestāre, praestiti, ful ll",
+  "mūnīre": "mūniō, mūnīre, mūnīvī, mūnītum",
+  "īnstruere": "īnstruō, īnstruere, īnstrūxī, īnstrūctum",
+  "fatīgāre": "fatīgō, fatīgāre, fatīgāvī, fatīgātum",
+  "excurrere": "excurrō, excurrere, excucurrī, excursum",
+  "ērumpere": "ērumpō, ērumpere, ērūpī, ēruptum",
+  "effundere": "effundō, effundere, effūdī, effūsum",
+  "dēsīderāre": "dēsīderō, dēsīderāre, dēsīderāvī, dēsīderātum long",
+  "cōpulāre": "cōpulō, cōpulāre, cōpulāvī, cōpulātum",
+  "convocāre": "convocō, convocāre, convocāvī, convocātum",
+  "commemorāre": "commemorō, commemorāre, commemorāvī, commemorātum",
+  "cōgere": "cōgō, cōgere, coēgī, coactum",
+  "caedere": "caedō, caedere, cecīdī, caesum",
+  "adiungere": "adiungō, adiungere, adiūnxī, adiūnctum",
+  "sapere": "sapiō, sapere, sapīvī",
+  "requīrere": "requīrō, requīrere, requīsīvī, requīsītum",
+  "prōsilīre": "prōsiliō, prōsilīre, prōsiluī",
+  "plaudere": "plaudō, plaudere, plausī, plausum",
+  "ōscitāre": "ōscitō, ōscitāre, ōscitāvī, ōscitātus",
+  "nūbere": "nūbō, nūbere, nūpsī",
+  "lūgēre": "lūgeō, lūgēre, lūxī, lūctum",
+  "laedere": "laedō, laedere, laesī, laesum",
+  "implicāre": "implicō, implicāre, implicāvī, implicātum",
+  "favēre": "faveō, favēre, fāvī, fautum",
+  "excruciāre": "excruciō, excruciāre, excruciāvī, excruciātum",
+  "ērubēscere": "ērubēscō, ērubēscere, ērubuī",
+  "ēlīdere": "ēlīdō, ēlīdere, ēlīsī, ēlīsum omit",
+  "dēvorāre": "dēvorō, dēvorāre, dēvoravī, dēvorātum swallow",
+  "conturbāre": "conturbō, conturbāre, conturbāvī, conturbātum",
+  "circumsilīre": "circumsiliō, circumsilīre, circumsiluī hop",
+  "certāre": "certō, certāre, certāvī, certātum",
+  "affirmāre": "affirmō, affirmāre, affirmāvī, affirmātum",
+  "accendere": "accendō, accendere, accendī, accensum",
+  "ōrdināre": "ōrdinō, ōrdināre, ōrdināvī, ōrdinātum",
+  "explānāre": "explānō, explānāre, explānāvī, explānātum",
+  "dēmere": "dēmō, dēmere, dēmpsī, dēmptum",
+  "adnectere": "adnectō, adnectere, adnexuī, adnexum",
+};
+
+    var PERFECT_ENDINGS = {
+      "1sg": "\u012B", "2sg": "ist\u012B", "3sg": "it",
+      "1pl": "imus", "2pl": "istis", "3pl": "\u0113runt"
+    };
+    var PERSON_LABELS = {
+      "1sg": "ego", "2sg": "t\u016B", "3sg": "is/ea/id",
+      "1pl": "n\u014Ds", "2pl": "v\u014Ds", "3pl": "e\u012B/eae/ea"
+    };
+    var PERSONS = ["1sg", "2sg", "3sg", "1pl", "2pl", "3pl"];
+    var ALL_CHAPTERS = [...new Set(VERBS.map(function(v){return v.ch}))].sort(function(a,b){return a-b});
+  </script>
+
+  <script type="text/babel">
+    const { useState, useCallback, useRef, useEffect } = React;
+
+    function getStem(perf1) {
+      return perf1.endsWith("\u012B") ? perf1.slice(0, -1) : perf1;
+    }
+    function getCorrectForm(verb, person) {
+      return getStem(verb.perf1) + PERFECT_ENDINGS[person];
+    }
+    function normalize(s) {
+      return s.trim().toLowerCase()
+        .replace(/\u0101/g,"a").replace(/\u0113/g,"e").replace(/\u012B/g,"i")
+        .replace(/\u014D/g,"o").replace(/\u016B/g,"u");
+    }
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function postToSheets(payload) {
+      if (!SHEETS_WEBHOOK_URL) return;
+      try {
+        fetch(SHEETS_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) { /* silent fail */ }
+    }
+
+    const linkBtn = {
+      background: "none", border: "none", color: "#a08850", cursor: "pointer",
+      fontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif",
+      fontSize: "0.85rem", padding: 0, textDecoration: "underline", textUnderlineOffset: "3px"
+    };
+
+    function App() {
+      // Login state
+      const [studentName, setStudentName] = useState("");
+      const [loggedIn, setLoggedIn] = useState(false);
+
+      // Drill state
+      const [selectedChapters, setSelectedChapters] = useState(new Set(ALL_CHAPTERS));
+      const [started, setStarted] = useState(false);
+      const [queue, setQueue] = useState([]);
+      const [currentIdx, setCurrentIdx] = useState(0);
+      const [input, setInput] = useState("");
+      const [feedback, setFeedback] = useState(null);
+      const [correctAnswer, setCorrectAnswer] = useState("");
+      const [score, setScore] = useState({ correct: 0, wrong: 0 });
+      const [showPrincipal, setShowPrincipal] = useState(false);
+      const [totalQuestions, setTotalQuestions] = useState(20);
+      const [missed, setMissed] = useState([]);
+      const [mainLength, setMainLength] = useState(0);
+      const [seenVerbs, setSeenVerbs] = useState(new Set());
+      const [startTime, setStartTime] = useState(null);
+      const [reported, setReported] = useState(false);
+      const inputRef = useRef(null);
+      const nameRef = useRef(null);
+
+      const totalInChapters = VERBS.filter(v => selectedChapters.has(v.ch)).length;
+      const totalAvailable = VERBS.filter(v => selectedChapters.has(v.ch) && !seenVerbs.has(v.inf)).length;
+
+      useEffect(() => {
+        if (!loggedIn && nameRef.current) nameRef.current.focus();
+      }, [loggedIn]);
+
+      useEffect(() => {
+        if (started && inputRef.current) inputRef.current.focus();
+      }, [started, currentIdx, feedback]);
+
+      const handleLogin = () => {
+        if (studentName.trim()) setLoggedIn(true);
+      };
+
+      const startDrill = useCallback(() => {
+        const filtered = VERBS.filter(v => selectedChapters.has(v.ch) && !seenVerbs.has(v.inf));
+        if (filtered.length === 0) return;
+        const shuffled = shuffle(filtered);
+        const count = Math.min(totalQuestions, shuffled.length);
+        const items = shuffled.slice(0, count).map(verb => ({
+          verb, person: PERSONS[Math.floor(Math.random() * PERSONS.length)]
+        }));
+        setSeenVerbs(prev => {
+          const next = new Set(prev);
+          items.forEach(i => next.add(i.verb.inf));
+          return next;
+        });
+        setQueue(items);
+        setCurrentIdx(0);
+        setInput("");
+        setFeedback(null);
+        setScore({ correct: 0, wrong: 0 });
+        setMissed([]);
+        setMainLength(items.length);
+        setStarted(true);
+        setShowPrincipal(false);
+        setStartTime(Date.now());
+        setReported(false);
+      }, [selectedChapters, totalQuestions, seenVerbs]);
+
+      const resetSession = () => {
+        setSeenVerbs(new Set());
+        setStarted(false);
+      };
+
+      const logout = () => {
+        setLoggedIn(false);
+        setStarted(false);
+        setSeenVerbs(new Set());
+        setStudentName("");
+      };
+
+      const checkAnswer = () => {
+        if (!input.trim()) return;
+        const item = queue[currentIdx];
+        const correct = getCorrectForm(item.verb, item.person);
+        if (normalize(input) === normalize(correct)) {
+          setFeedback("correct");
+          setScore(s => ({ ...s, correct: s.correct + 1 }));
+          setCorrectAnswer(correct);
+        } else {
+          setFeedback("wrong");
+          setScore(s => ({ ...s, wrong: s.wrong + 1 }));
+          setCorrectAnswer(correct);
+          setMissed(prev => [...prev, {
+            verb: item.verb, person: item.person,
+            wrongAnswer: input.trim(), correctForm: correct
+          }]);
+          if (!item.isRetry) {
+            setQueue(prev => [...prev, { verb: item.verb, person: item.person, isRetry: true }]);
+          }
+        }
+      };
+
+      const nextQuestion = () => {
+        setCurrentIdx(i => i + 1);
+        setInput("");
+        setFeedback(null);
+        setCorrectAnswer("");
+        setShowPrincipal(false);
+      };
+
+      const toggleChapter = (ch) => {
+        setSelectedChapters(prev => {
+          const next = new Set(prev);
+          if (next.has(ch)) next.delete(ch); else next.add(ch);
+          return next;
+        });
+      };
+      const selectAll = () => setSelectedChapters(new Set(ALL_CHAPTERS));
+      const selectNone = () => setSelectedChapters(new Set());
+
+      const done = currentIdx >= queue.length && started;
+
+      // Report to Google Sheets when done
+      useEffect(() => {
+        if (done && !reported) {
+          const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+          const pct = queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0;
+          const chapList = [...selectedChapters].sort((a,b) => a - b).join(", ");
+          postToSheets({
+            student: studentName.trim(),
+            exercise: "Tempus Perfectum",
+            chapters: chapList,
+            correct: score.correct,
+            total: queue.length,
+            percent: pct,
+            timeSeconds: elapsed,
+            missed: missed.map(m => ({
+              verb: m.verb.inf,
+              person: m.person,
+              wrong: m.wrongAnswer,
+              correct: m.correctForm
+            }))
+          });
+          setReported(true);
+        }
+      }, [done]);
+
+      const item = queue[currentIdx];
+
+      // ====== LOGIN SCREEN ======
+      if (!loggedIn) {
+        return (
+          <div>
+            <h1 style={{
+              fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", borderBottom: "1px solid #555",
+              paddingBottom: "0.75rem", marginBottom: "1.5rem", color: "#c9b97a"
+            }}>
+              Tempus Perfectum
+            </h1>
+            <p style={{ fontSize: "0.95rem", color: "#b0ab9a", marginBottom: "1.5rem", lineHeight: 1.7 }}>
+              Scrībe nōmen tuum ut incipias.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+              <input
+                ref={nameRef}
+                type="text"
+                value={studentName}
+                onChange={e => setStudentName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") handleLogin(); }}
+                placeholder="Nōmen..."
+                style={{
+                  flex: 1, padding: "0.6rem 0.75rem", fontSize: "1.1rem",
+                  fontFamily: "inherit", background: "#2a2824", color: "#e8e4d9",
+                  border: "1px solid #555", outline: "none"
+                }}
+              />
+              <button onClick={handleLogin} style={{
+                padding: "0.6rem 1.8rem", fontSize: "1rem",
+                background: "#c9b97a", color: "#1a1a1e", border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontWeight: 600
+              }}>
+                Intrā
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ====== CHAPTER SELECTION ======
+      if (!started) {
+        return (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.5rem" }}>
+              <h1 style={{
+                fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+                textTransform: "uppercase", borderBottom: "none",
+                color: "#c9b97a", margin: 0
+              }}>
+                Tempus Perfectum
+              </h1>
+              <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                <span style={{ marginRight: "0.75rem" }}>{studentName}</span>
+                <button onClick={logout} style={{ ...linkBtn, fontSize: "0.75rem" }}>ēxī</button>
+              </div>
+            </div>
+            <div style={{ borderBottom: "1px solid #555", marginBottom: "1.5rem" }}></div>
+
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "1.5rem", color: "#b0ab9a" }}>
+              Capitula sēlige et numerum quaestiōnum statue.
+            </p>
+
+            <div style={{ marginBottom: "1.25rem" }}>
+              <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                <button onClick={selectAll} style={linkBtn}>Omnia</button>
+                <button onClick={selectNone} style={linkBtn}>Nūlla</button>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {ALL_CHAPTERS.map(ch => (
+                  <button key={ch} onClick={() => toggleChapter(ch)} style={{
+                    padding: "0.35rem 0.7rem", fontSize: "0.85rem",
+                    border: selectedChapters.has(ch) ? "1px solid #c9b97a" : "1px solid #444",
+                    background: selectedChapters.has(ch) ? "#2a2824" : "transparent",
+                    color: selectedChapters.has(ch) ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {ch}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ fontSize: "0.85rem", color: "#888" }}>
+                Numerus quaestiōnum:&nbsp;
+                <select value={totalQuestions} onChange={e => setTotalQuestions(Number(e.target.value))} style={{
+                  background: "#2a2824", color: "#e8e4d9", border: "1px solid #555",
+                  padding: "0.3rem 0.5rem", fontFamily: "inherit", fontSize: "0.85rem"
+                }}>
+                  {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem", fontSize: "0.85rem", color: "#888" }}>
+              <span>Verba restantia: <strong style={{ color: totalAvailable > 0 ? "#c9b97a" : "#b56b6b" }}>{totalAvailable}</strong> / {totalInChapters}</span>
+              {seenVerbs.size > 0 && (
+                <button onClick={resetSession} style={{ ...linkBtn, marginLeft: "1rem", fontSize: "0.8rem" }}>
+                  Nova sessiō
+                </button>
+              )}
+            </div>
+
+            {totalAvailable === 0 && (
+              <p style={{ fontSize: "0.9rem", color: "#b56b6b", marginBottom: "1rem" }}>
+                Omnia verba iam vīsa sunt. Preme "Nova sessiō" ut dēnuō incipias.
+              </p>
+            )}
+
+            <button onClick={startDrill} disabled={totalAvailable === 0} style={{
+              padding: "0.6rem 1.8rem", fontSize: "1rem",
+              background: totalAvailable === 0 ? "#333" : "#c9b97a",
+              color: totalAvailable === 0 ? "#666" : "#1a1a1e",
+              border: "none", cursor: totalAvailable === 0 ? "default" : "pointer",
+              fontFamily: "inherit", fontWeight: 600, letterSpacing: "0.06em"
+            }}>
+              Incipe
+            </button>
+          </div>
+        );
+      }
+
+      // ====== RESULTS ======
+      if (done) {
+        const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        return (
+          <div>
+            <h1 style={{
+              fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", borderBottom: "1px solid #555",
+              paddingBottom: "0.75rem", marginBottom: "1.5rem", color: "#c9b97a"
+            }}>
+              Tempus Perfectum
+            </h1>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 400, color: "#c9b97a", marginBottom: "1rem" }}>Fīnis</h2>
+            <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.75rem" }}>{studentName}</p>
+            <p style={{ fontSize: "1.1rem", lineHeight: 1.8 }}>
+              Rēcta: <span style={{ color: "#7a9e7a" }}>{score.correct}</span> &nbsp;/&nbsp; Falsa: <span style={{ color: "#b56b6b" }}>{score.wrong}</span>
+            </p>
+            <p style={{ fontSize: "1.1rem", color: "#b0ab9a" }}>
+              {queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0}%
+              <span style={{ fontSize: "0.85rem", color: "#666", marginLeft: "1rem" }}>
+                {mins > 0 ? mins + " min " : ""}{secs} s
+              </span>
+            </p>
+
+            {missed.length > 0 && (
+              <div style={{ marginTop: "1.5rem" }}>
+                <h3 style={{
+                  fontSize: "1rem", fontWeight: 400, color: "#a08850",
+                  marginBottom: "0.75rem", borderBottom: "1px solid #3a3a3e", paddingBottom: "0.5rem"
+                }}>
+                  Verba corrigenda
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {missed.map((m, i) => (
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                      padding: "0.5rem 0.75rem", background: "#222226",
+                      border: "1px solid #3a3a3e", fontSize: "0.9rem"
+                    }}>
+                      <div>
+                        <span style={{ color: "#c9b97a" }}>{m.verb.inf}</span>
+                        <span style={{ color: "#666", marginLeft: "0.5rem" }}>({PERSON_LABELS[m.person]})</span>
+                      </div>
+                      <div>
+                        <span style={{ color: "#b56b6b", marginRight: "0.75rem" }}>{m.wrongAnswer}</span>
+                        <span style={{ color: "#7a9e7a" }}>{m.correctForm}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem" }}>
+              <button onClick={() => setStarted(false)} style={{
+                padding: "0.5rem 1.4rem", background: "#c9b97a", color: "#1a1a1e",
+                border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem", fontWeight: 600
+              }}>
+                Iterum
+              </button>
+              <button onClick={resetSession} style={{
+                padding: "0.5rem 1.4rem", background: "transparent", color: "#a08850",
+                border: "1px solid #a08850", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem"
+              }}>
+                Nova sessiō
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ====== DRILL ======
+      return (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+            <h1 style={{
+              fontSize: "1.4rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: "#c9b97a", margin: 0
+            }}>
+              Tempus Perfectum
+            </h1>
+            <span style={{ fontSize: "0.8rem", color: "#666" }}>{studentName}</span>
+          </div>
+          <div style={{ borderBottom: "1px solid #555", marginBottom: "1.25rem" }}></div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "#777", marginBottom: "1.5rem" }}>
+            <span>
+              {currentIdx + 1} / {queue.length}
+              {currentIdx >= mainLength && <span style={{ color: "#a08850", marginLeft: "0.5rem" }}>(iterātiō)</span>}
+            </span>
+            <span style={{ color: "#7a9e7a" }}>{score.correct} recta</span>
+          </div>
+
+          <div style={{
+            background: "#222226", border: "1px solid #3a3a3e",
+            padding: "1.5rem", marginBottom: "1.25rem"
+          }}>
+            <p style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.5rem", marginTop: 0 }}>
+              Cap. {item.verb.ch}
+            </p>
+            <p style={{ fontSize: "1.3rem", marginBottom: "0.75rem", marginTop: 0 }}>
+              <span style={{ color: "#c9b97a" }}>{item.verb.inf}</span>
+              <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.verb.meaning})</span>
+            </p>
+            <p style={{ fontSize: "1.1rem", marginBottom: 0, marginTop: 0 }}>
+              Persōna: <strong style={{ color: "#ddd" }}>{PERSON_LABELS[item.person]}</strong>
+              <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "0.5rem" }}>
+                ({item.person.replace("sg", " sing.").replace("pl", " plūr.")})
+              </span>
+            </p>
+          </div>
+
+          {!feedback && (
+            <button onClick={() => setShowPrincipal(!showPrincipal)} style={{
+              ...linkBtn, fontSize: "0.8rem", marginBottom: "1rem", display: "block"
+            }}>
+              {showPrincipal ? "Cēla partēs prīncipālēs" : "Ostende partēs prīncipālēs"}
+            </button>
+          )}
+          {showPrincipal && !feedback && (
+            <p style={{ fontSize: "0.9rem", color: "#a08850", marginBottom: "1rem" }}>
+              <strong>{PP_MAP[item.verb.inf] || item.verb.perf1}</strong>
+            </p>
+          )}
+
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  if (feedback) nextQuestion(); else checkAnswer();
+                }
+              }}
+              readOnly={!!feedback}
+              placeholder="Scrībe formam..."
+              style={{
+                flex: 1, padding: "0.6rem 0.75rem", fontSize: "1.1rem",
+                fontFamily: "inherit", background: "#2a2824", color: "#e8e4d9",
+                border: feedback === "correct" ? "1px solid #7a9e7a"
+                  : feedback === "wrong" ? "1px solid #b56b6b" : "1px solid #555",
+                outline: "none"
+              }}
+            />
+            {!feedback ? (
+              <button onClick={checkAnswer} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#c9b97a", color: "#1a1a1e", border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontWeight: 600
+              }}>
+                Proba
+              </button>
+            ) : (
+              <button onClick={nextQuestion} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#555", color: "#e8e4d9", border: "none",
+                cursor: "pointer", fontFamily: "inherit"
+              }}>
+                Proxima
+              </button>
+            )}
+          </div>
+
+          {feedback && (
+            <div style={{
+              marginTop: "1rem", padding: "0.75rem 1rem",
+              background: feedback === "correct" ? "rgba(122,158,122,0.12)" : "rgba(181,107,107,0.12)",
+              border: feedback === "correct" ? "1px solid #4a6e4a" : "1px solid #7a4444"
+            }}>
+              {feedback === "correct" ? (
+                <p style={{ margin: 0, color: "#7a9e7a" }}>Rēctē. <strong>{correctAnswer}</strong></p>
+              ) : (
+                <p style={{ margin: 0, color: "#b56b6b" }}>
+                  Falsum. Rēspōnsum rēctum: <strong style={{ color: "#e8e4d9" }}>{correctAnswer}</strong>
+                </p>
+              )}
+            </div>
+          )}
+
+          <p style={{ fontSize: "0.7rem", color: "#555", marginTop: "1.5rem" }}>
+            Macrōna nōn requīruntur. Enter = proba / proxima.
+          </p>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
