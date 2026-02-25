@@ -478,6 +478,43 @@ const VERBS = [
   { inf: "explānāre", perf1: "explānāvī", meaning: "explain", ch: 35 },
   { inf: "dēmere", perf1: "dēmpsī", meaning: "remove", ch: 35 },
   { inf: "adnectere", perf1: "adnexuī", meaning: "attach", ch: 35 },
+  // — deponent verbs —
+  { inf: "verērī", perf1: "veritus sum", meaning: "fear, respect", ch: 16, dep: true },
+  { inf: "orīrī", perf1: "ortus sum", meaning: "rise, appear", ch: 16, dep: true },
+  { inf: "opperīrī", perf1: "opperītus sum", meaning: "wait for", ch: 16, dep: true },
+  { inf: "laetārī", perf1: "laetātus sum", meaning: "rejoice", ch: 16, dep: true },
+  { inf: "intuērī", perf1: "intuitus sum", meaning: "look at, watch", ch: 16, dep: true },
+  { inf: "cōnsōlārī", perf1: "cōnsōlātus sum", meaning: "comfort, console", ch: 16, dep: true },
+  { inf: "cōnārī", perf1: "cōnātus sum", meaning: "attempt, try", ch: 16, dep: true },
+  { inf: "fierī", perf1: "factus sum", meaning: "be made, become", ch: 16, dep: true },
+  { inf: "partīrī", perf1: "partītus sum", meaning: "share, divide", ch: 17, dep: true },
+  { inf: "largīrī", perf1: "largītus sum", meaning: "give generously", ch: 17, dep: true },
+  { inf: "osculārī", perf1: "osculātus sum", meaning: "kiss", ch: 19, dep: true },
+  { inf: "revertī", perf1: "reversus sum", meaning: "return", ch: 20, dep: true },
+  { inf: "fārī", perf1: "fātus sum", meaning: "speak", ch: 20, dep: true },
+  { inf: "mentīrī", perf1: "mentītus sum", meaning: "lie, deceive", ch: 21, dep: true },
+  { inf: "arbitrārī", perf1: "arbitrātus sum", meaning: "think, believe", ch: 22, dep: true },
+  { inf: "mīrārī", perf1: "mīrātus sum", meaning: "wonder at", ch: 24, dep: true },
+  { inf: "pollicērī", perf1: "pollicitus sum", meaning: "promise", ch: 25, dep: true },
+  { inf: "imitārī", perf1: "imitātus sum", meaning: "imitate", ch: 26, dep: true },
+  { inf: "comitārī", perf1: "comitātus sum", meaning: "accompany", ch: 23, dep: true },
+  { inf: "querī", perf1: "questus sum", meaning: "complain", ch: 29, dep: true },
+  { inf: "precārī", perf1: "precātus sum", meaning: "pray", ch: 29, dep: true },
+  { inf: "cōnfitērī", perf1: "cōnfessus sum", meaning: "confess", ch: 29, dep: true },
+  { inf: "fābulārī", perf1: "fābulātus sum", meaning: "talk, chat", ch: 31, dep: true },
+  { inf: "versārī", perf1: "versātus sum", meaning: "move about", ch: 28, dep: true },
+  { inf: "tumultuārī", perf1: "tumultuātus sum", meaning: "make an uproar", ch: 28, dep: true },
+  { inf: "admīrārī", perf1: "admīrātus sum", meaning: "admire, wonder at", ch: 28, dep: true },
+  { inf: "tuērī", perf1: "tuitus sum", meaning: "guard, protect", ch: 32, dep: true },
+  { inf: "minārī", perf1: "minātus sum", meaning: "threaten", ch: 32, dep: true },
+  { inf: "hortārī", perf1: "hortātus sum", meaning: "encourage, urge", ch: 33, dep: true },
+  { inf: "lūctārī", perf1: "lūctātus sum", meaning: "wrestle, fight", ch: 35, dep: true },
+  // — semi-deponent verbs —
+  { inf: "audēre", perf1: "ausus sum", meaning: "dare", ch: 10, dep: true },
+  { inf: "gaudēre", perf1: "gāvīsus sum", meaning: "be glad", ch: 11, dep: true },
+  { inf: "solēre", perf1: "solitus sum", meaning: "be accustomed", ch: 14, dep: true },
+  { inf: "fīdere", perf1: "fīsus sum", meaning: "trust", ch: 31, dep: true },
+  { inf: "cōnfīdere", perf1: "cōnfīsus sum", meaning: "trust", ch: 31, dep: true },
 ];
 
 const PP_MAP = {
@@ -520,7 +557,7 @@ const PP_MAP = {
   "tergēre": "tergeō, tergēre, tersī, tersum",
   "tenēre": "teneō, tenēre, tenuī, tentum",
   "lacrimāre": "lacrimō, lacrimāre, lacrimāvī, lacrimātum",
-  "exspectāre": "exspectō, exspectāre, exspectāvī",
+  "exspectāre": "exspectō, exspectāre, exspectāvī, exspectātum",
   "exīre": "exeō, exīre, exiī, exitum",
   "dare": "dō, dare, dedī, datum",
   "currere": "currō, currere, cucurri, cursum",
@@ -547,14 +584,14 @@ const PP_MAP = {
   "petere": "petō, petere, petīvī, petītum",
   "lūcēre": "lūceō, lūcēre, luxī",
   "lātrāre": "lātrō, lātrāre, lātrāvī, lātrātum",
-  "impōnere": "impōnō, impōnere, imposuī",
+  "impōnere": "impōnō, impōnere, imposuī, impositum",
   "iacēre": "iaceō, iacēre, iacuī, iacitum lie",
   "errāre": "errō, errāre, errāvī, errātum",
   "dūcere": "dūcō, dūcere, dūxī, ductum",
   "dēclīnāre": "dēclīnō, dēclīnāre, dēclīnāvī, dēclīnātum",
   "bibere": "bibō, bibere, bibī, bibitum",
   "bālāre": "bālō, bālāre, bālāvī, bālātum",
-  "accurrere": "accurrō, accurrere, accucurrī",
+  "accurrere": "accurrō, accurrere, accucurrī, accursum",
   "velle": "volō, velle, voluī",
   "vīvere": "vīvō, vīvere, vīxī, vīctum",
   "volāre": "volō, volāre, volāvī, volātum",
@@ -567,12 +604,12 @@ const PP_MAP = {
   "lūdere": "lūdō, lūdere, lūsī, lūsum",
   "facere": "faciō, facere, fēcī, factum",
   "capere": "capiō, capere, cēpī, captum",
-  "canere": "canō, canere, cecinī",
+  "canere": "canō, canere, cecinī, cantum",
   "cadere": "cadō, cadere, cecidī, cāsum",
   "ascendere": "ascendō, ascendere, ascendī, ascēnsum",
   "tangere": "tangō, tangere, tetigī, tāctum",
   "stāre": "stō, stāre, stetī, statum",
-  "spectāre": "spectāre",
+  "spectāre": "spectō, spectāre, spectāvī, spectātum",
   "sentīre": "sentiō, sentīre, sēnsī, sēnsum",
   "sedēre": "sedeō, sedēre, sēdī, sessum",
   "sānāre": "sānō, sānāre, sānāvī, sānātum",
@@ -585,7 +622,7 @@ const PP_MAP = {
   "dīcere": "dīcō, dīcere, dīxī, dictum",
   "dētergēre": "dētergeō, dētergēre, dētersī, dētersum",
   "arcessere": "arcessō, arcessere, arcessīvī, arcessītum",
-  "appōnere": "appōnō, appōnere, apposuī",
+  "appōnere": "appōnō, appōnere, apposuī, appositum",
   "aegrōtāre": "aegrōtō, aegrōtāre, aegrōtāvī, aegrōtātum",
   "pugnāre": "pugnō, pugnāre, pugnāvī, pugnātum ght",
   "oppugnāre": "oppugnō, oppugnāre, oppugnāvī, oppugnātum",
@@ -609,15 +646,15 @@ const PP_MAP = {
   "poscere": "poscō poscere poposci",
   "mergere": "mergō, mergere, mersī, mersum dip",
   "lavāre": "lavō, lavāre, lāvī, lavātum",
-  "induere": "induō, induere, induī",
+  "induere": "induō, induere, induī, indūtum",
   "gerere": "gerō, gerere, gessī, gestum",
   "excitāre": "excitō, excitāre, excitāvī, excitātum",
-  "cubāre": "cubō, cubāre, cubuī",
+  "cubāre": "cubō, cubāre, cubuī, cubitum",
   "afferre": "afferō, afferre, attulī, allātum",
   "redīre": "redeō, redīre, rediī, reditum",
   "reddere": "reddō, reddere, reddidī, redditum",
   "recitāre": "recitō, recitāre, recitāvī, recitātum",
-  "pūnīre": "pūniō, pūnīre, pūnīvī",
+  "pūnīre": "pūniō, pūnīre, pūnīvī, pūnītum",
   "exclāmāre": "exclāmō, exclāmāre, exclāmāvī, exclāmātum",
   "dēsinere": "dēsinō, dēsinere, dēsiī, dēsitum nish",
   "cōnsīdere": "cōnsīdō, cōnsīdere, cōnsēdī, cōnsēssum",
@@ -630,7 +667,7 @@ const PP_MAP = {
   "īnfluere": "īnfluō, īnfluere, īnfluxī, īnfluxum",
   "implēre": "impleō, implēre, implēvī, implētum ll",
   "iactāre": "iactō, iactāre, iactāvī, iactātum",
-  "haurīre": "hauriō, haurīre, hausī",
+  "haurīre": "hauriō, haurīre, hausī, haustum",
   "gubernāre": "gubernō, gubernāre, gubernāvī, gubernātum",
   "flāre": "flō, flāre, flāvī, flātum",
   "cōnscendere": "cōnscendō, cōnscendere, cōnscendī, cōnscēnsum",
@@ -657,7 +694,7 @@ const PP_MAP = {
   "legere": "legō, legere, lēgī, lēctum",
   "iungere": "iungō, iungere, iūnxī, iūnctum",
   "intellegere": "intellegō, intellegere, intellēxī, intellēctum",
-  "imprimere": "imprimō, imprimere, impressī",
+  "imprimere": "imprimō, imprimere, impressī, impressum",
   "exaudīre": "exaudiō, exaudīre, exaudīvī, exaudītum",
   "efficere": "efficiō, efficere, effēcī, effectum",
   "dictāre": "dictō, dictāre, dictāvī, dictātum",
@@ -702,7 +739,7 @@ const PP_MAP = {
   "scindere": "scindō, scindere, scidī, scissum",
   "salīre": "saliō, salīre, saluī, saltum",
   "rumpere": "rumpō, rumpere, rūpī, ruptum",
-  "rogitāre": "rogitō, rogitāre, rogitāvī",
+  "rogitāre": "rogitō, rogitāre, rogitāvī, rogitātum",
   "retinēre": "retineō, retinēre, retinuī, retentum",
   "resistere": "resistō, resistere, restitī",
   "removēre": "removeō, removēre, remōvī, remōtum",
@@ -715,8 +752,8 @@ const PP_MAP = {
   "fremere": "fremō, fremere, fremuī, fremitum",
   "dērīdēre": "dērīdeō, dērīdēre, dērīsī, dērīsum",
   "cūstōdīre": "cūstōdiō, cūstōdīre, cūstōdīvī, cūstōdītum",
-  "cēdere": "cēdō, cēdere, cessī",
-  "cavēre": "caveō, cavēre, cāvī",
+  "cēdere": "cēdō, cēdere, cessī, cessum",
+  "cavēre": "caveō, cavēre, cāvī, cautum",
   "admittere": "admittō, admittere, admīsī, admissum let",
   "accēdere": "accēdō, accēdere, accessī, accessum",
   "trādere": "trādō, trādere, trādidī, trāditum hand",
@@ -758,17 +795,17 @@ const PP_MAP = {
   "excōgitāre": "excōgitō, excōgitāre, excōgitāvī, excōgitātum",
   "ēvolāre": "ēvolō, ēvolāre, ēvolāvī, ēvolātum",
   "effugere": "effugiō, effugere, effūgī, effugitum",
-  "dēspicere": "dēspiciō, dēspicere, dēspexī",
+  "dēspicere": "dēspiciō, dēspicere, dēspexī, dēspectum",
   "cōnsūmere": "cōnsūmō, cōnsūmere, cōnsūmpsī, cōnsūmptum spend",
   "cōnficere": "cōnficiō, cōnficere, cōnfēcī, cōnfectum",
   "accidere": "accidō, accidere, accidī",
   "aberrāre": "aberrō, aberrāre, aberrāvī, aberrātum",
-  "suspicere": "suspiciō, suspicere, suspexi",
+  "suspicere": "suspiciō, suspicere, suspexī, suspectum",
   "serere": "serō, serere, sēvī, satum",
   "rigāre": "rigō, rigāre, rigāvī, rigātum",
   "rapere": "rapiō, rapere, rapuī, raptum",
   "quiēscere": "quiēscō, quiēscere, quiēvī, quiētum",
-  "prōicere": "prōiciō, prōicere, proieci",
+  "prōicere": "prōiciō, prōicere, proiēcī, proiectum",
   "prohibēre": "prohibeō, prohibēre, prohibuī, prohibitum",
   "pāscere": "pāscō, pāscere, pāvī, pāstum",
   "ōrāre": "ōrō, ōrāre, ōrāvī, ōrātum",
@@ -785,7 +822,7 @@ const PP_MAP = {
   "arāre": "arō, arāre, arāvī, arātum",
   "vītāre": "vītō, vītāre, vītāvī, vītātum",
   "suscitāre": "suscitō, suscitāre, suscitāvī, suscitātus",
-  "spērāre": "spērō, spērāre, spērāvī",
+  "spērāre": "spērō, spērāre, spērāvī, spērātum",
   "servīre": "serviō, servīre, servīvī, servītum",
   "salvāre": "salvō, salvāre, salvāvī, salvātum",
   "rogāre": "rogō, rogāre, rogāvī, rogātum",
@@ -812,7 +849,7 @@ const PP_MAP = {
   "recognōscere": "recognōscō, recognōscere, recognōvī, recognitum",
   "perturbāre": "perturbō, perturbāre, perturbāvī, perturbātum",
   "permovēre": "permoveō, permovēre, permōvī, permōtum",
-  "parcere": "parcō, parcere, pepercī",
+  "parcere": "parcō, parcere, pepercī, parsum",
   "invidēre": "invideō, invidēre, invīdī, invīsum",
   "fīnīre": "fīniō, fīnīre, fīnīvī, fīnītum limit",
   "expōnere": "expōnō, expōnere, exposuī, expositum put",
@@ -857,7 +894,7 @@ const PP_MAP = {
   "retrahere": "retrahō, retrahere, retraxī, retractum",
   "optāre": "optō, optāre, optāvī, optātum",
   "latēre": "lateō, latēre, latuī",
-  "īgnōscere": "īgnōscō, īgnōscere, īgnōvī",
+  "īgnōscere": "īgnōscō, īgnōscere, īgnōvī, īgnōtum",
   "ēducāre": "ēducō, ēducāre, ēducāvī, ēducātum",
   "cruciāre": "cruciō, cruciāre, cruciāvī, cruciātum",
   "aufugere": "aufugiō, aufugere, aufūgī",
@@ -878,7 +915,7 @@ const PP_MAP = {
   "studēre": "studeō, studēre",
   "properāre": "properō, properāre, properāvī, properātum",
   "prōcurrere": "prōcurrō, prōcurrere, prōcurrī, prōcursum",
-  "praestāre": "praestō, praestāre, praestiti, ful ll",
+  "praestāre": "praestō, praestāre, praestitī, praestitum",
   "mūnīre": "mūniō, mūnīre, mūnīvī, mūnītum",
   "īnstruere": "īnstruō, īnstruere, īnstrūxī, īnstrūctum",
   "fatīgāre": "fatīgō, fatīgāre, fatīgāvī, fatīgātum",
@@ -897,7 +934,7 @@ const PP_MAP = {
   "prōsilīre": "prōsiliō, prōsilīre, prōsiluī",
   "plaudere": "plaudō, plaudere, plausī, plausum",
   "ōscitāre": "ōscitō, ōscitāre, ōscitāvī, ōscitātus",
-  "nūbere": "nūbō, nūbere, nūpsī",
+  "nūbere": "nūbō, nūbere, nūpsī, nūptum",
   "lūgēre": "lūgeō, lūgēre, lūxī, lūctum",
   "laedere": "laedō, laedere, laesī, laesum",
   "implicāre": "implicō, implicāre, implicāvī, implicātum",
@@ -915,6 +952,41 @@ const PP_MAP = {
   "explānāre": "explānō, explānāre, explānāvī, explānātum",
   "dēmere": "dēmō, dēmere, dēmpsī, dēmptum",
   "adnectere": "adnectō, adnectere, adnexuī, adnexum",
+  "verērī": "vereor, verērī, veritus sum",
+  "orīrī": "orīor, orīrī, ortus sum",
+  "opperīrī": "opperior, opperīrī, opperītus sum",
+  "laetārī": "laetor, laetārī, laetātus sum",
+  "intuērī": "intueor, intuērī, intuitus sum",
+  "cōnsōlārī": "cōnsōlor, cōnsōlārī, cōnsōlātus sum",
+  "cōnārī": "cōnor, cōnārī, cōnātus sum",
+  "fierī": "fīō, fierī, factus sum",
+  "partīrī": "partior, partīrī, partītus sum",
+  "largīrī": "largīor, largīrī, largītus sum",
+  "osculārī": "osculor, osculārī, osculātus sum",
+  "revertī": "revertor, revertī, reversus sum",
+  "fārī": "for, fārī, fātus sum",
+  "mentīrī": "mentīor, mentīrī, mentītus sum",
+  "arbitrārī": "arbitror, arbitrārī, arbitrātus sum",
+  "mīrārī": "mīror, mīrārī, mīrātus sum",
+  "pollicērī": "polliceor, pollicērī, pollicitus sum",
+  "imitārī": "imitor, imitārī, imitātus sum",
+  "comitārī": "comitor, comitārī, comitātus sum",
+  "querī": "queror, querī, questus sum",
+  "precārī": "precor, precārī, precātus sum",
+  "cōnfitērī": "cōnfiteor, cōnfitērī, cōnfessus sum",
+  "fābulārī": "fābulor, fābulārī, fābulātus sum",
+  "versārī": "versor, versārī, versātus sum",
+  "tumultuārī": "tumultuor, tumultuārī, tumultuātus sum",
+  "admīrārī": "admīror, admīrārī, admīrātus sum",
+  "tuērī": "tueor, tuērī, tuitus sum",
+  "minārī": "minor, minārī, minātus sum",
+  "hortārī": "hortor, hortārī, hortātus sum",
+  "lūctārī": "lūctor, lūctārī, lūctātus sum",
+  "audēre": "audeō, audēre, ausus sum",
+  "gaudēre": "gaudeō, gaudēre, gāvīsus sum",
+  "solēre": "soleō, solēre, solitus sum",
+  "fīdere": "fīdō, fīdere, fīsus sum",
+  "cōnfīdere": "cōnfidō, cōnfīdere, cōnfīsus sum",
 };
 
     var PERFECT_ENDINGS = {
@@ -927,6 +999,71 @@ const PP_MAP = {
     };
     var PERSONS = ["1sg", "2sg", "3sg", "1pl", "2pl", "3pl"];
     var ALL_CHAPTERS = [...new Set(VERBS.map(function(v){return v.ch}))].sort(function(a,b){return a-b});
+
+    // --- PASSIVE VOICE DATA ---
+    var ESSE_PRESENT = {
+      "1sg": "sum", "2sg": "es", "3sg": "est",
+      "1pl": "sumus", "2pl": "estis", "3pl": "sunt"
+    };
+    var GENDERS = ["m", "f", "n"];
+    var PPP_ENDINGS = {
+      "1sg": { m: "us", f: "a", n: "um" },
+      "2sg": { m: "us", f: "a", n: "um" },
+      "3sg": { m: "us", f: "a", n: "um" },
+      "1pl": { m: "\u012B", f: "ae", n: "a" },
+      "2pl": { m: "\u012B", f: "ae", n: "a" },
+      "3pl": { m: "\u012B", f: "ae", n: "a" }
+    };
+    var GENDER_SYMBOLS = { m: "m.", f: "f.", n: "n." };
+    function PERSON_LABEL_WITH_GENDER(person, gender) {
+      var base = {
+        "1sg": "ego", "2sg": "t\u016B", "3sg": { m: "is", f: "ea", n: "id" },
+        "1pl": "n\u014Ds", "2pl": "v\u014Ds", "3pl": { m: "e\u012B", f: "eae", n: "ea" }
+      };
+      var lbl = base[person];
+      var pronoun = typeof lbl === "object" ? lbl[gender] : lbl;
+      return pronoun + " (" + GENDER_SYMBOLS[gender] + ")";
+    }
+
+    // Extract PPP stem from PP_MAP for a given verb infinitive
+    // Returns null if no PPP can be formed
+    function getPPPStem(inf) {
+      var entry = PP_MAP[inf];
+      if (!entry) return null;
+      var verb = VERBS.find(function(v){ return v.inf === inf; });
+      var parts = entry.split(",").map(function(s){ return s.trim(); });
+
+      // Deponent/semi-deponent: look for part containing "sum"
+      if (verb && verb.dep) {
+        for (var i = parts.length - 1; i >= 0; i--) {
+          if (/\bsum$/.test(parts[i])) {
+            var ppp = parts[i].replace(/\s+sum$/, "").trim();
+            if (ppp.endsWith("us")) return ppp.slice(0, -2);
+          }
+        }
+        return null;
+      }
+
+      // Regular verb: 4th principal part is at index 3
+      if (parts.length < 4) return null;
+      var fourth = parts[3];
+      // Clean trailing English words
+      fourth = fourth.replace(/\s+[a-z].*$/i, "").trim();
+      // Clean trailing parenthetical
+      fourth = fourth.replace(/\s*\(.*$/, "").trim();
+      // Skip futūrus-type entries (esse, adesse, etc.)
+      if (fourth.endsWith("ūrus") || fourth.endsWith("urus")) return null;
+      if (fourth.endsWith("um")) return fourth.slice(0, -2);
+      if (fourth.endsWith("us")) return fourth.slice(0, -2);
+      return null;
+    }
+
+    // Build a cached PPP stem map
+    var PPP_STEM_MAP = {};
+    VERBS.forEach(function(v) {
+      var stem = getPPPStem(v.inf);
+      if (stem) PPP_STEM_MAP[v.inf] = stem;
+    });
   </script>
 
   <script type="text/babel">
@@ -937,6 +1074,12 @@ const PP_MAP = {
     }
     function getCorrectForm(verb, person) {
       return getStem(verb.perf1) + PERFECT_ENDINGS[person];
+    }
+    function getPassiveForm(verb, person, gender) {
+      var stem = PPP_STEM_MAP[verb.inf];
+      if (!stem) return null;
+      var ending = PPP_ENDINGS[person][gender];
+      return stem + ending + " " + ESSE_PRESENT[person];
     }
     function normalize(s) {
       return s.trim().toLowerCase()
@@ -976,6 +1119,7 @@ const PP_MAP = {
 
       // Drill state
       const [selectedChapters, setSelectedChapters] = useState(new Set(ALL_CHAPTERS));
+      const [voiceMode, setVoiceMode] = useState("active"); // "active", "passive", "both"
       const [started, setStarted] = useState(false);
       const [queue, setQueue] = useState([]);
       const [currentIdx, setCurrentIdx] = useState(0);
@@ -993,8 +1137,15 @@ const PP_MAP = {
       const inputRef = useRef(null);
       const nameRef = useRef(null);
 
-      const totalInChapters = VERBS.filter(v => selectedChapters.has(v.ch)).length;
-      const totalAvailable = VERBS.filter(v => selectedChapters.has(v.ch) && !seenVerbs.has(v.inf)).length;
+      const verbPool = VERBS.filter(v => {
+        if (!selectedChapters.has(v.ch)) return false;
+        if (voiceMode === "active") return !v.dep;
+        if (voiceMode === "passive") return v.dep || PPP_STEM_MAP[v.inf];
+        // "both": include all that can appear in either mode
+        return true;
+      });
+      const totalInChapters = verbPool.length;
+      const totalAvailable = verbPool.filter(v => !seenVerbs.has(v.inf)).length;
 
       useEffect(() => {
         if (!loggedIn && nameRef.current) nameRef.current.focus();
@@ -1009,13 +1160,33 @@ const PP_MAP = {
       };
 
       const startDrill = useCallback(() => {
-        const filtered = VERBS.filter(v => selectedChapters.has(v.ch) && !seenVerbs.has(v.inf));
+        const filtered = VERBS.filter(v => {
+          if (!selectedChapters.has(v.ch)) return false;
+          if (seenVerbs.has(v.inf)) return false;
+          if (voiceMode === "active") return !v.dep;
+          if (voiceMode === "passive") return v.dep || PPP_STEM_MAP[v.inf];
+          return true; // "both"
+        });
         if (filtered.length === 0) return;
         const shuffled = shuffle(filtered);
         const count = Math.min(totalQuestions, shuffled.length);
-        const items = shuffled.slice(0, count).map(verb => ({
-          verb, person: PERSONS[Math.floor(Math.random() * PERSONS.length)]
-        }));
+        const items = shuffled.slice(0, count).map(verb => {
+          const person = PERSONS[Math.floor(Math.random() * PERSONS.length)];
+          // Determine voice for this item
+          let voice;
+          if (verb.dep) {
+            voice = "passive"; // deponents/semi-dep always passive form
+          } else if (voiceMode === "active") {
+            voice = "active";
+          } else if (voiceMode === "passive") {
+            voice = "passive";
+          } else {
+            // "both" — pick randomly, but only passive if PPP exists
+            voice = (PPP_STEM_MAP[verb.inf] && Math.random() < 0.5) ? "passive" : "active";
+          }
+          const gender = voice === "passive" ? GENDERS[Math.floor(Math.random() * GENDERS.length)] : null;
+          return { verb, person, voice, gender };
+        });
         setSeenVerbs(prev => {
           const next = new Set(prev);
           items.forEach(i => next.add(i.verb.inf));
@@ -1032,7 +1203,7 @@ const PP_MAP = {
         setShowPrincipal(false);
         setStartTime(Date.now());
         setReported(false);
-      }, [selectedChapters, totalQuestions, seenVerbs]);
+      }, [selectedChapters, totalQuestions, seenVerbs, voiceMode]);
 
       const resetSession = () => {
         setSeenVerbs(new Set());
@@ -1049,7 +1220,9 @@ const PP_MAP = {
       const checkAnswer = () => {
         if (!input.trim()) return;
         const item = queue[currentIdx];
-        const correct = getCorrectForm(item.verb, item.person);
+        const correct = item.voice === "passive"
+          ? getPassiveForm(item.verb, item.person, item.gender)
+          : getCorrectForm(item.verb, item.person);
         if (normalize(input) === normalize(correct)) {
           setFeedback("correct");
           setScore(s => ({ ...s, correct: s.correct + 1 }));
@@ -1059,11 +1232,11 @@ const PP_MAP = {
           setScore(s => ({ ...s, wrong: s.wrong + 1 }));
           setCorrectAnswer(correct);
           setMissed(prev => [...prev, {
-            verb: item.verb, person: item.person,
+            verb: item.verb, person: item.person, voice: item.voice, gender: item.gender,
             wrongAnswer: input.trim(), correctForm: correct
           }]);
           if (!item.isRetry) {
-            setQueue(prev => [...prev, { verb: item.verb, person: item.person, isRetry: true }]);
+            setQueue(prev => [...prev, { verb: item.verb, person: item.person, voice: item.voice, gender: item.gender, isRetry: true }]);
           }
         }
       };
@@ -1097,6 +1270,7 @@ const PP_MAP = {
           postToSheets({
             student: studentName.trim(),
             exercise: "Tempus Perfectum",
+            voiceMode: voiceMode,
             chapters: chapList,
             correct: score.correct,
             total: queue.length,
@@ -1105,6 +1279,8 @@ const PP_MAP = {
             missed: missed.map(m => ({
               verb: m.verb.inf,
               person: m.person,
+              voice: m.voice,
+              gender: m.gender,
               wrong: m.wrongAnswer,
               correct: m.correctForm
             }))
@@ -1210,6 +1386,27 @@ const PP_MAP = {
               </label>
             </div>
 
+            <div style={{ marginBottom: "1.5rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Vōx:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {[
+                  { val: "active", label: "Āctīvum" },
+                  { val: "passive", label: "Passīvum" },
+                  { val: "both", label: "Utrumque" }
+                ].map(opt => (
+                  <button key={opt.val} onClick={() => setVoiceMode(opt.val)} style={{
+                    padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                    border: voiceMode === opt.val ? "1px solid #c9b97a" : "1px solid #444",
+                    background: voiceMode === opt.val ? "#2a2824" : "transparent",
+                    color: voiceMode === opt.val ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div style={{ marginBottom: "1.5rem", fontSize: "0.85rem", color: "#888" }}>
               <span>Verba restantia: <strong style={{ color: totalAvailable > 0 ? "#c9b97a" : "#b56b6b" }}>{totalAvailable}</strong> / {totalInChapters}</span>
               {seenVerbs.size > 0 && (
@@ -1281,7 +1478,12 @@ const PP_MAP = {
                     }}>
                       <div>
                         <span style={{ color: "#c9b97a" }}>{m.verb.inf}</span>
-                        <span style={{ color: "#666", marginLeft: "0.5rem" }}>({PERSON_LABELS[m.person]})</span>
+                        <span style={{ color: "#666", marginLeft: "0.5rem" }}>
+                          ({m.voice === "passive"
+                            ? PERSON_LABEL_WITH_GENDER(m.person, m.gender)
+                            : PERSON_LABELS[m.person]})
+                        </span>
+                        {m.voice === "passive" && <span style={{ color: "#9a9ace", fontSize: "0.7rem", marginLeft: "0.4rem" }}>pass.</span>}
                       </div>
                       <div>
                         <span style={{ color: "#b56b6b", marginRight: "0.75rem" }}>{m.wrongAnswer}</span>
@@ -1337,15 +1539,30 @@ const PP_MAP = {
             background: "#222226", border: "1px solid #3a3a3e",
             padding: "1.5rem", marginBottom: "1.25rem"
           }}>
-            <p style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.5rem", marginTop: 0 }}>
-              Cap. {item.verb.ch}
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+              <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
+                Cap. {item.verb.ch}
+              </p>
+              <span style={{
+                fontSize: "0.7rem", padding: "0.15rem 0.5rem",
+                border: "1px solid " + (item.voice === "passive" ? "#7a7aae" : "#7a9e7a"),
+                color: item.voice === "passive" ? "#9a9ace" : "#7a9e7a",
+                letterSpacing: "0.06em"
+              }}>
+                {item.voice === "passive" ? "PASSĪVUM" : "ĀCTĪVUM"}
+              </span>
+            </div>
             <p style={{ fontSize: "1.3rem", marginBottom: "0.75rem", marginTop: 0 }}>
               <span style={{ color: "#c9b97a" }}>{item.verb.inf}</span>
               <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.verb.meaning})</span>
+              {item.verb.dep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
             </p>
             <p style={{ fontSize: "1.1rem", marginBottom: 0, marginTop: 0 }}>
-              Persōna: <strong style={{ color: "#ddd" }}>{PERSON_LABELS[item.person]}</strong>
+              Persōna: <strong style={{ color: "#ddd" }}>
+                {item.voice === "passive"
+                  ? PERSON_LABEL_WITH_GENDER(item.person, item.gender)
+                  : PERSON_LABELS[item.person]}
+              </strong>
               <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "0.5rem" }}>
                 ({item.person.replace("sg", " sing.").replace("pl", " plūr.")})
               </span>
