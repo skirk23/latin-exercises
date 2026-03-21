@@ -1628,6 +1628,8 @@ const PP_MAP = {
             {englishMode ? (
               <p style={{ fontSize: "1.3rem", marginBottom: "0.75rem", marginTop: 0 }}>
                 <span style={{ color: "#c9b97a" }}>{getEnglishPrompt(item.verb, item.person, item.voice, item.gender)}</span>
+                <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.verb.inf})</span>
+                {item.verb.dep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
               </p>
             ) : (
               <p style={{ fontSize: "1.3rem", marginBottom: "0.75rem", marginTop: 0 }}>
