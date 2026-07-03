@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a1e'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23c9b97a' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <title>Exercitia Latīna</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,7 +15,7 @@
       min-height: 100vh;
       background: #1a1a1e;
       color: #e8e4d9;
-      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+      font-family: 'Cardo', 'Palatino Linotype', Palatino, Georgia, serif;
       padding: 2rem;
     }
 
@@ -45,6 +49,40 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 1rem;
+    }
+
+    .userbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.9rem;
+      color: #b0ab9a;
+      margin-bottom: 1.5rem;
+    }
+
+    .userbar button {
+      background: none; border: none; color: #a08850; cursor: pointer;
+      font-family: inherit; font-size: 0.8rem;
+      text-decoration: underline; text-underline-offset: 3px; padding: 0;
+    }
+
+    .login-box p {
+      font-size: 0.95rem; color: #b0ab9a; margin-bottom: 1.5rem; line-height: 1.7;
+    }
+
+    .login-row { display: flex; gap: 0.75rem; align-items: center; }
+
+    .login-row input {
+      flex: 1; padding: 0.6rem 0.75rem; font-size: 1.1rem;
+      font-family: inherit; background: #2a2824; color: #e8e4d9;
+      border: 1px solid #555; outline: none;
+    }
+    .login-row input:focus { border-color: #c9b97a; box-shadow: 0 0 0 2px rgba(201,185,122,0.25); }
+
+    .login-row button {
+      padding: 0.6rem 1.8rem; font-size: 1rem;
+      background: #c9b97a; color: #1a1a1e; border: none;
+      cursor: pointer; font-family: inherit; font-weight: 700;
     }
 
     .exercise-list {
@@ -98,35 +136,141 @@
       font-size: 0.75rem;
       color: #555;
     }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Exercitia Latīna</h1>
-    <p class="subtitle">Familia Rōmāna </p>
+    <p class="subtitle">Familia Rōmāna</p>
 
-    <h2>Morphologia</h2>
-    <div class="exercise-list">
-      <a class="exercise-link" href="perfect-tense.html">
-        <div class="title">Tempus Perfectum</div>
-        <div class="desc">
-          Coniugā verba in tempore perfectō. 434 verba ex capitulis 1–35.
-        </div>
-        <span class="badge">Cap. 1–35</span>
-      </a>
+    <div id="login" class="login-box hidden">
+      <p>Scrībe nōmen tuum ut incipias.</p>
+      <div class="login-row">
+        <input id="name-input" type="text" placeholder="Nōmen..." autocomplete="off">
+        <button id="enter-btn">Intrā</button>
+      </div>
+    </div>
 
-      <!-- Future exercises go here, e.g.:
-      <a class="exercise-link" href="noun-declension.html">
-        <div class="title">Dēclīnātiōnēs Nōminum</div>
-        <div class="desc">Dēclīnā nōmina per omnēs cāsūs.</div>
-        <span class="badge">Cap. 1–20</span>
-      </a>
-      -->
+    <div id="main" class="hidden">
+      <div class="userbar">
+        <span>Salvē, <span id="student-name"></span>.</span>
+        <button id="logout-btn">ēxī</button>
+      </div>
+
+      <h2>Morphologia</h2>
+      <div class="exercise-list">
+        <a class="exercise-link" href="noun-declension.html">
+          <div class="title">Dēclīnātiōnēs Nōminum</div>
+          <div class="desc">
+            Dēclīnā nōmina per cāsūs, singulāriter et plūrāliter. 594 nōmina ex capitulis 1–35.
+          </div>
+          <span class="badge">Cap. 1–35</span>
+        </a>
+
+        <a class="exercise-link" href="present-tense.html">
+          <div class="title">Tempus Praesēns</div>
+          <div class="desc">
+            Coniugā verba in tempore praesentī, āctīvē et passīvē. 469 verba ex capitulis 1–35.
+          </div>
+          <span class="badge">Cap. 1–35</span>
+        </a>
+
+        <a class="exercise-link" href="imperfect-tense.html">
+          <div class="title">Tempus Imperfectum</div>
+          <div class="desc">
+            Coniugā verba in tempore imperfectō, āctīvē et passīvē. 469 verba ex capitulis 1–35.
+          </div>
+          <span class="badge">Cap. 1–35</span>
+        </a>
+
+        <a class="exercise-link" href="future-tense.html">
+          <div class="title">Tempus Futūrum</div>
+          <div class="desc">
+            Coniugā verba in tempore futūrō, āctīvē et passīvē. 469 verba ex capitulis 1–35.
+          </div>
+          <span class="badge">Cap. 1–35</span>
+        </a>
+
+        <a class="exercise-link" href="perfect-tense.html">
+          <div class="title">Tempus Perfectum</div>
+          <div class="desc">
+            Coniugā verba in tempore perfectō. 434 verba ex capitulis 1–35.
+          </div>
+          <span class="badge">Cap. 1–35</span>
+        </a>
+
+        <a class="exercise-link" href="pronoun-declension.html">
+          <div class="title">Prōnōmina</div>
+          <div class="desc">
+            Dēclīnā prōnōmina: is, hic, ille, īdem, quī — per cāsūs, genera, numerōs.
+          </div>
+          <span class="badge">150 fōrmae</span>
+        </a>
+      </div>
     </div>
 
     <div class="footer">
       Exercitia ad <em>Lingua Latīna per sē Illustrāta</em>
     </div>
   </div>
+
+  <script>
+    var KEY = "exercitiaStudent";
+    var login = document.getElementById("login");
+    var main = document.getElementById("main");
+    var input = document.getElementById("name-input");
+
+    function getStored() { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
+    function setStored(v) {
+      try { v === null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, v); } catch (e) {}
+    }
+
+    // Accept the name from a returning exercise page (?n=...) — needed when the
+    // pages are opened from the local file system, where localStorage may not
+    // be shared between documents.
+    var urlName = null;
+    try { urlName = new URLSearchParams(window.location.search).get("n"); } catch (e) {}
+    var current = urlName || getStored();
+    if (urlName) setStored(urlName);
+
+    function render() {
+      // carry the name to each exercise via the link itself
+      document.querySelectorAll(".exercise-link").forEach(function (a) {
+        if (!a.dataset.base) a.dataset.base = a.getAttribute("href");
+        a.href = current ? a.dataset.base + "?n=" + encodeURIComponent(current) : a.dataset.base;
+      });
+      if (current) {
+        document.getElementById("student-name").textContent = current;
+        login.classList.add("hidden");
+        main.classList.remove("hidden");
+      } else {
+        login.classList.remove("hidden");
+        main.classList.add("hidden");
+        input.focus();
+      }
+    }
+
+    function enter() {
+      var name = input.value.trim();
+      if (!name) return;
+      current = name;
+      setStored(name);
+      render();
+    }
+
+    document.getElementById("enter-btn").addEventListener("click", enter);
+    input.addEventListener("keydown", function(e) { if (e.key === "Enter") enter(); });
+    document.getElementById("logout-btn").addEventListener("click", function() {
+      current = "";
+      setStored(null);
+      input.value = "";
+      try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+      render();
+    });
+
+    render();
+  </script>
 </body>
 </html>

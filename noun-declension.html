@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a1e'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23c9b97a' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <title>Dēclīnātiōnēs Nōminum — Exercitia Latīna</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #1a1a1e;
+      color: #e8e4d9;
+      font-family: 'Cardo', 'Palatino Linotype', Palatino, Georgia, serif;
+      padding: 2rem;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    a.back-link {
+      font-size: 0.7rem; color: #777; text-decoration: none;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      display: inline-block; margin-bottom: 1rem;
+    }
+    a.back-link:hover { color: #c9b97a; }
+    input:focus { border-color: #c9b97a !important; box-shadow: 0 0 0 2px rgba(201,185,122,0.25); }
+    .progress-track { height: 3px; background: #333; margin-bottom: 1.25rem; }
+    .progress-fill { height: 100%; background: #c9b97a; transition: width 0.3s ease; }
+    @keyframes fbPulse { 0% { background: rgba(122,158,122,0.4); } 100% { background: rgba(122,158,122,0.12); } }
+    @keyframes fbShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .fb-ok { animation: fbPulse 0.5s ease-out; }
+    .fb-no { animation: fbShake 0.3s ease-in-out; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a class="back-link" href="index.html">&larr; Exercitia Latīna</a>
+    <div id="root"></div>
+  </div>
+
+  <script>
+    // ========================================================
+    // CONFIGURATION — set your Google Apps Script webhook URL
+    // ========================================================
+    var SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzyIbIcdS266C01qkfABYpZjac4YA8yKjtw_EoiDBp3LevdKnouOiniigaJBkMBw1A3rQ/exec";
+    // Leave empty to disable reporting.
+  </script>
+
+  <script>
+    // ========================================================
+    // NOUN DATA — generated from FR_nouns.csv
+    // fields: nom, gen (gen sg; gen pl for plural-tantum), g (gender,
+    // "… pl" = plurale tantum), ch (chapter), decl (1–5), mng (English)
+    // ========================================================
+const NOUNS = [
+  { nom:"capitulum", gen:"capitulī", g:"n", ch:1, decl:2, mng:"chapter" },
+  { nom:"exemplum", gen:"exemplī", g:"n", ch:1, decl:2, mng:"example" },
+  { nom:"fluvius", gen:"fluviī", g:"m", ch:1, decl:2, mng:"river" },
+  { nom:"grammatica", gen:"grammaticae", g:"f", ch:1, decl:1, mng:"grammar" },
+  { nom:"imperium", gen:"imperiī", g:"n", ch:1, decl:2, mng:"command" },
+  { nom:"īnsula", gen:"īnsulae", g:"f", ch:1, decl:1, mng:"island" },
+  { nom:"littera", gen:"litterae", g:"f", ch:1, decl:1, mng:"letter" },
+  { nom:"numerus", gen:"numerī", g:"m", ch:1, decl:2, mng:"number" },
+  { nom:"ōceanus", gen:"ōceanī", g:"m", ch:1, decl:2, mng:"ocean" },
+  { nom:"oppidum", gen:"oppidī", g:"n", ch:1, decl:2, mng:"town" },
+  { nom:"pēnsum", gen:"pēnsī", g:"n", ch:1, decl:2, mng:"task" },
+  { nom:"prōvincia", gen:"prōvinciae", g:"f", ch:1, decl:1, mng:"province" },
+  { nom:"syllaba", gen:"syllabae", g:"f", ch:1, decl:1, mng:"syllable" },
+  { nom:"vocābulum", gen:"vocābulī", g:"n", ch:1, decl:2, mng:"word" },
+  { nom:"ancilla", gen:"ancillae", g:"f", ch:2, decl:1, mng:"female slave" },
+  { nom:"domina", gen:"dominae", g:"f", ch:2, decl:1, mng:"mistress" },
+  { nom:"dominus", gen:"dominī", g:"m", ch:2, decl:2, mng:"master" },
+  { nom:"familia", gen:"familiae", g:"f", ch:2, decl:1, mng:"domestic staff" },
+  { nom:"fēmina", gen:"fēminae", g:"f", ch:2, decl:1, mng:"woman" },
+  { nom:"fīlia", gen:"fīliae", g:"f", ch:2, decl:1, mng:"daughter" },
+  { nom:"fīlius", gen:"fīliī", g:"m", ch:2, decl:2, mng:"son" },
+  { nom:"liber", gen:"librī", g:"m", ch:2, decl:2, mng:"book" },
+  { nom:"līberī", gen:"līberōrum", g:"m", ch:2, decl:2, mng:"children" },
+  { nom:"māter", gen:"mātris", g:"f", ch:2, decl:3, mng:"mother" },
+  { nom:"pāgina", gen:"pāginae", g:"f", ch:2, decl:1, mng:"page" },
+  { nom:"pater", gen:"patris", g:"m", ch:2, decl:3, mng:"father" },
+  { nom:"puella", gen:"puellae", g:"f", ch:2, decl:1, mng:"girl" },
+  { nom:"puer", gen:"puerī", g:"m", ch:2, decl:2, mng:"boy" },
+  { nom:"servus", gen:"servī", g:"m", ch:2, decl:2, mng:"slave" },
+  { nom:"titulus", gen:"titulī", g:"m", ch:2, decl:2, mng:"title" },
+  { nom:"vir", gen:"virī", g:"m", ch:2, decl:2, mng:"man" },
+  { nom:"mamma", gen:"mammae", g:"f", ch:3, decl:1, mng:"mommy" },
+  { nom:"persōna", gen:"persōnae", g:"f", ch:3, decl:1, mng:"character" },
+  { nom:"scaena", gen:"scaenae", g:"f", ch:3, decl:1, mng:"scene" },
+  { nom:"verbum", gen:"verbī", g:"n", ch:3, decl:2, mng:"word" },
+  { nom:"baculum", gen:"baculī", g:"n", ch:4, decl:2, mng:"stick" },
+  { nom:"mēnsa", gen:"mēnsae", g:"f", ch:4, decl:1, mng:"table" },
+  { nom:"nummus", gen:"nummī", g:"m", ch:4, decl:2, mng:"coin" },
+  { nom:"pecūnia", gen:"pecūniae", g:"f", ch:4, decl:1, mng:"money" },
+  { nom:"sacculus", gen:"sacculī", g:"m", ch:4, decl:2, mng:"purse" },
+  { nom:"aqua", gen:"aquae", g:"f", ch:5, decl:1, mng:"water" },
+  { nom:"ātrium", gen:"ātriī", g:"n", ch:5, decl:2, mng:"main room" },
+  { nom:"cubiculum", gen:"cubiculī", g:"n", ch:5, decl:2, mng:"bedroom" },
+  { nom:"fenestra", gen:"fenestrae", g:"f", ch:5, decl:1, mng:"window" },
+  { nom:"hortus", gen:"hortī", g:"m", ch:5, decl:2, mng:"garden" },
+  { nom:"impluvium", gen:"impluviī", g:"n", ch:5, decl:2, mng:"water basin" },
+  { nom:"līlium", gen:"līliī", g:"n", ch:5, decl:2, mng:"lily" },
+  { nom:"nāsus", gen:"nāsī", g:"m", ch:5, decl:2, mng:"nose" },
+  { nom:"ōstium", gen:"ōstiī", g:"n", ch:5, decl:2, mng:"door" },
+  { nom:"peristylum", gen:"peristylī", g:"n", ch:5, decl:2, mng:"peristyle" },
+  { nom:"rosa", gen:"rosae", g:"f", ch:5, decl:1, mng:"rose" },
+  { nom:"vīlla", gen:"vīllae", g:"f", ch:5, decl:1, mng:"country house" },
+  { nom:"amīca", gen:"amīcae", g:"f", ch:6, decl:1, mng:"girlfriend" },
+  { nom:"amīcus", gen:"amīcī", g:"m", ch:6, decl:2, mng:"friend" },
+  { nom:"equus", gen:"equī", g:"m", ch:6, decl:2, mng:"horse" },
+  { nom:"inimīcus", gen:"inimīcī", g:"m", ch:6, decl:2, mng:"enemy" },
+  { nom:"lectīca", gen:"lectīcae", g:"f", ch:6, decl:1, mng:"litter" },
+  { nom:"mūrus", gen:"mūrī", g:"m", ch:6, decl:2, mng:"wall" },
+  { nom:"passus", gen:"passūs", g:"m", ch:6, decl:4, mng:"pace" },
+  { nom:"porta", gen:"portae", g:"f", ch:6, decl:1, mng:"gate" },
+  { nom:"saccus", gen:"saccī", g:"m", ch:6, decl:2, mng:"sack" },
+  { nom:"umerus", gen:"umerī", g:"m", ch:6, decl:2, mng:"shoulder" },
+  { nom:"via", gen:"viae", g:"f", ch:6, decl:1, mng:"road" },
+  { nom:"lacrima", gen:"lacrimae", g:"f", ch:7, decl:1, mng:"tear" },
+  { nom:"mālum", gen:"mālī", g:"n", ch:7, decl:2, mng:"apple" },
+  { nom:"mare", gen:"maris", g:"n", ch:7, decl:3, mng:"sea" },
+  { nom:"oculus", gen:"oculī", g:"m", ch:7, decl:2, mng:"eye" },
+  { nom:"ōsculum", gen:"ōsculī", g:"n", ch:7, decl:2, mng:"kiss" },
+  { nom:"ōstiārius", gen:"ōstiāriī", g:"m", ch:7, decl:2, mng:"door-keeper" },
+  { nom:"pirum", gen:"pirī", g:"n", ch:7, decl:2, mng:"pear" },
+  { nom:"speculum", gen:"speculī", g:"n", ch:7, decl:2, mng:"mirror" },
+  { nom:"ānulus", gen:"ānulī", g:"m", ch:8, decl:2, mng:"ring" },
+  { nom:"collum", gen:"collī", g:"n", ch:8, decl:2, mng:"neck" },
+  { nom:"digitus", gen:"digitī", g:"m", ch:8, decl:2, mng:"finger" },
+  { nom:"gemma", gen:"gemmae", g:"f", ch:8, decl:1, mng:"precious stone" },
+  { nom:"līnea", gen:"līneae", g:"f", ch:8, decl:1, mng:"string" },
+  { nom:"margarīta", gen:"margarītae", g:"f", ch:8, decl:1, mng:"pearl" },
+  { nom:"medium", gen:"mediī", g:"n", ch:8, decl:2, mng:"middle" },
+  { nom:"ōrnāmentum", gen:"ōrnāmentī", g:"n", ch:8, decl:2, mng:"ornament" },
+  { nom:"pretium", gen:"pretiī", g:"n", ch:8, decl:2, mng:"price" },
+  { nom:"sēstertius", gen:"sēstertiī", g:"m", ch:8, decl:2, mng:"sesterce" },
+  { nom:"taberna", gen:"tabernae", g:"f", ch:8, decl:1, mng:"shop" },
+  { nom:"tabernārius", gen:"tabernāriī", g:"m", ch:8, decl:2, mng:"shopkeeper" },
+  { nom:"arbor", gen:"arboris", g:"f", ch:9, decl:3, mng:"tree" },
+  { nom:"caelum", gen:"caelī", g:"n", ch:9, decl:2, mng:"sky" },
+  { nom:"campus", gen:"campī", g:"m", ch:9, decl:2, mng:"plain" },
+  { nom:"canis", gen:"canis", g:"m/f", ch:9, decl:3, mng:"dog" },
+  { nom:"cibus", gen:"cibī", g:"m", ch:9, decl:2, mng:"food" },
+  { nom:"clāmor", gen:"clāmōris", g:"m", ch:9, decl:3, mng:"shout" },
+  { nom:"collis", gen:"collis", g:"m", ch:9, decl:3, mng:"hill" },
+  { nom:"dēns", gen:"dentis", g:"m", ch:9, decl:3, mng:"tooth" },
+  { nom:"herba", gen:"herbae", g:"f", ch:9, decl:1, mng:"grass" },
+  { nom:"lupus", gen:"lupī", g:"m", ch:9, decl:2, mng:"wolf" },
+  { nom:"modus", gen:"modī", g:"m", ch:9, decl:2, mng:"manner" },
+  { nom:"mōns", gen:"montis", g:"m", ch:9, decl:3, mng:"mountain" },
+  { nom:"nūbēs", gen:"nūbis", g:"f", ch:9, decl:3, mng:"cloud" },
+  { nom:"ovis", gen:"ovis", g:"f", ch:9, decl:3, mng:"sheep" },
+  { nom:"pānis", gen:"pānis", g:"m", ch:9, decl:3, mng:"bread" },
+  { nom:"pāstor", gen:"pāstōris", g:"m", ch:9, decl:3, mng:"shepherd" },
+  { nom:"rīvus", gen:"rīvī", g:"m", ch:9, decl:2, mng:"brook" },
+  { nom:"silva", gen:"silvae", g:"f", ch:9, decl:1, mng:"wood" },
+  { nom:"sōl", gen:"sōlis", g:"m", ch:9, decl:3, mng:"sun" },
+  { nom:"terra", gen:"terrae", g:"f", ch:9, decl:1, mng:"earth" },
+  { nom:"timor", gen:"timōris", g:"m", ch:9, decl:3, mng:"fear" },
+  { nom:"umbra", gen:"umbrae", g:"f", ch:9, decl:1, mng:"shade" },
+  { nom:"vallis", gen:"vallis", g:"f", ch:9, decl:3, mng:"valley" },
+  { nom:"vestīgium", gen:"vestīgiī", g:"n", ch:9, decl:2, mng:"footprint" },
+  { nom:"āēr", gen:"āeris", g:"m", ch:10, decl:3, mng:"air" },
+  { nom:"āla", gen:"ālae", g:"f", ch:10, decl:1, mng:"wing" },
+  { nom:"anima", gen:"animae", g:"f", ch:10, decl:1, mng:"breath" },
+  { nom:"animal", gen:"animālis", g:"n", ch:10, decl:3, mng:"animal" },
+  { nom:"aquila", gen:"aquilae", g:"f", ch:10, decl:1, mng:"eagle" },
+  { nom:"asinus", gen:"asinī", g:"m", ch:10, decl:2, mng:"ass" },
+  { nom:"avis", gen:"avis", g:"f", ch:10, decl:3, mng:"bird" },
+  { nom:"bēstia", gen:"bēstiae", g:"f", ch:10, decl:1, mng:"beast" },
+  { nom:"cauda", gen:"caudae", g:"f", ch:10, decl:1, mng:"tail" },
+  { nom:"deus", gen:"deī", g:"m", ch:10, decl:2, mng:"god" },
+  { nom:"fera", gen:"ferae", g:"f", ch:10, decl:1, mng:"wild animal" },
+  { nom:"flūmen", gen:"flūminis", g:"n", ch:10, decl:3, mng:"river" },
+  { nom:"folium", gen:"foliī", g:"n", ch:10, decl:2, mng:"leaf" },
+  { nom:"homō", gen:"hominis", g:"m", ch:10, decl:3, mng:"human being" },
+  { nom:"lectus", gen:"lectī", g:"m", ch:10, decl:2, mng:"bed" },
+  { nom:"leō", gen:"leōnis", g:"m", ch:10, decl:3, mng:"lion" },
+  { nom:"mercātor", gen:"mercātōris", g:"m", ch:10, decl:3, mng:"merchant" },
+  { nom:"nīdus", gen:"nīdī", g:"m", ch:10, decl:2, mng:"nest" },
+  { nom:"nūntius", gen:"nūntiī", g:"m", ch:10, decl:2, mng:"messenger" },
+  { nom:"ōvum", gen:"ōvī", g:"n", ch:10, decl:2, mng:"egg" },
+  { nom:"pēs", gen:"pedis", g:"m", ch:10, decl:3, mng:"foot" },
+  { nom:"petasus", gen:"petasī", g:"m", ch:10, decl:2, mng:"hat" },
+  { nom:"pila", gen:"pilae", g:"f", ch:10, decl:1, mng:"ball" },
+  { nom:"piscis", gen:"piscis", g:"m", ch:10, decl:3, mng:"fish" },
+  { nom:"pullus", gen:"pullī", g:"m", ch:10, decl:2, mng:"young" },
+  { nom:"pulmō", gen:"pulmōnis", g:"m", ch:10, decl:3, mng:"lung" },
+  { nom:"rāmus", gen:"rāmī", g:"m", ch:10, decl:2, mng:"branch" },
+  { nom:"vōx", gen:"vōcis", g:"f", ch:10, decl:3, mng:"voice" },
+  { nom:"auris", gen:"auris", g:"f", ch:11, decl:3, mng:"ear" },
+  { nom:"bracchium", gen:"bracchiī", g:"n", ch:11, decl:2, mng:"arm" },
+  { nom:"capillus", gen:"capillī", g:"m", ch:11, decl:2, mng:"hair" },
+  { nom:"caput", gen:"capitis", g:"n", ch:11, decl:3, mng:"head" },
+  { nom:"cerebrum", gen:"cerebrī", g:"n", ch:11, decl:2, mng:"brain" },
+  { nom:"color", gen:"colōris", g:"m", ch:11, decl:3, mng:"color" },
+  { nom:"cor", gen:"cordis", g:"n", ch:11, decl:3, mng:"heart" },
+  { nom:"corpus", gen:"corporis", g:"n", ch:11, decl:3, mng:"body" },
+  { nom:"crūs", gen:"crūris", g:"n", ch:11, decl:3, mng:"leg" },
+  { nom:"culter", gen:"cultrī", g:"m", ch:11, decl:2, mng:"knife" },
+  { nom:"frōns", gen:"frontis", g:"f", ch:11, decl:3, mng:"forehead" },
+  { nom:"gena", gen:"genae", g:"f", ch:11, decl:1, mng:"cheek" },
+  { nom:"iecur", gen:"iecoris", g:"n", ch:11, decl:3, mng:"liver" },
+  { nom:"labrum", gen:"labrī", g:"n", ch:11, decl:2, mng:"lip" },
+  { nom:"lingua", gen:"linguae", g:"f", ch:11, decl:1, mng:"tongue" },
+  { nom:"manus", gen:"manūs", g:"f", ch:11, decl:4, mng:"hand" },
+  { nom:"medicus", gen:"medicī", g:"m", ch:11, decl:2, mng:"physician" },
+  { nom:"membrum", gen:"membrī", g:"n", ch:11, decl:2, mng:"limb" },
+  { nom:"ōs", gen:"ōris", g:"n", ch:11, decl:3, mng:"mouth" },
+  { nom:"pectus", gen:"pectoris", g:"n", ch:11, decl:3, mng:"breast" },
+  { nom:"pōculum", gen:"pōculī", g:"n", ch:11, decl:2, mng:"cup" },
+  { nom:"sanguis", gen:"sanguinis", g:"m", ch:11, decl:3, mng:"blood" },
+  { nom:"vēna", gen:"vēnae", g:"f", ch:11, decl:1, mng:"vein" },
+  { nom:"venter", gen:"ventris", g:"m", ch:11, decl:3, mng:"belly" },
+  { nom:"viscera", gen:"viscerum", g:"n", ch:11, decl:5, mng:"internal organs" },
+  { nom:"arcus", gen:"arcūs", g:"m", ch:12, decl:4, mng:"bow" },
+  { nom:"arma", gen:"armōrum", g:"n pl", ch:12, decl:2, mng:"arms" },
+  { nom:"avunculus", gen:"avunculī", g:"m", ch:12, decl:2, mng:"uncle" },
+  { nom:"bellum", gen:"bellī", g:"n", ch:12, decl:2, mng:"war" },
+  { nom:"castra", gen:"castrōrum", g:"n pl", ch:12, decl:2, mng:"camp" },
+  { nom:"cognōmen", gen:"cognōminis", g:"n", ch:12, decl:3, mng:"surname" },
+  { nom:"dux", gen:"ducis", g:"m", ch:12, decl:3, mng:"leader" },
+  { nom:"eques", gen:"equitis", g:"m", ch:12, decl:3, mng:"horseman" },
+  { nom:"equitātus", gen:"equitātūs", g:"m", ch:12, decl:4, mng:"cavalry" },
+  { nom:"exercitus", gen:"exercitūs", g:"m", ch:12, decl:4, mng:"army" },
+  { nom:"fīnis", gen:"fīnis", g:"m", ch:12, decl:3, mng:"boundary" },
+  { nom:"fossa", gen:"fossae", g:"f", ch:12, decl:1, mng:"ditch" },
+  { nom:"frāter", gen:"frātris", g:"m", ch:12, decl:3, mng:"brother" },
+  { nom:"gladius", gen:"gladiī", g:"m", ch:12, decl:2, mng:"sword" },
+  { nom:"hasta", gen:"hastae", g:"f", ch:12, decl:1, mng:"lance" },
+  { nom:"hostis", gen:"hostis", g:"m", ch:12, decl:3, mng:"enemy" },
+  { nom:"impetus", gen:"impetūs", g:"m", ch:12, decl:4, mng:"attack" },
+  { nom:"metus", gen:"metūs", g:"m", ch:12, decl:4, mng:"fear" },
+  { nom:"mīles", gen:"mīlitis", g:"m", ch:12, decl:3, mng:"soldier" },
+  { nom:"nōmen", gen:"nōminis", g:"n", ch:12, decl:3, mng:"name" },
+  { nom:"pars", gen:"partis", g:"f", ch:12, decl:3, mng:"part" },
+  { nom:"patria", gen:"patriae", g:"f", ch:12, decl:1, mng:"native country" },
+  { nom:"pedes", gen:"peditis", g:"m", ch:12, decl:3, mng:"foot-soldier" },
+  { nom:"pīlum", gen:"pīlī", g:"n", ch:12, decl:2, mng:"spear" },
+  { nom:"praenōmen", gen:"praenōminis", g:"n", ch:12, decl:3, mng:"first name" },
+  { nom:"pugnus", gen:"pugnī", g:"m", ch:12, decl:2, mng:"fist" },
+  { nom:"sagitta", gen:"sagittae", g:"f", ch:12, decl:1, mng:"arrow" },
+  { nom:"scūtum", gen:"scūtī", g:"n", ch:12, decl:2, mng:"shield" },
+  { nom:"soror", gen:"sorōris", g:"f", ch:12, decl:3, mng:"sister" },
+  { nom:"vāllum", gen:"vāllī", g:"n", ch:12, decl:2, mng:"rampart" },
+  { nom:"versus", gen:"versūs", g:"m", ch:12, decl:4, mng:"verse" },
+  { nom:"aequinoctium", gen:"aequinoctiī", g:"n", ch:13, decl:2, mng:"equinox" },
+  { nom:"aestās", gen:"aestātis", g:"f", ch:13, decl:3, mng:"summer" },
+  { nom:"annus", gen:"annī", g:"m", ch:13, decl:2, mng:"year" },
+  { nom:"autumnus", gen:"autumnī", g:"m", ch:13, decl:2, mng:"autumn" },
+  { nom:"diēs", gen:"diēī", g:"m", ch:13, decl:5, mng:"day" },
+  { nom:"faciēs", gen:"faciēī", g:"f", ch:13, decl:5, mng:"face  form" },
+  { nom:"fōrma", gen:"fōrmae", g:"f", ch:13, decl:1, mng:"form" },
+  { nom:"glaciēs", gen:"glaciēī", g:"f", ch:13, decl:5, mng:"ice" },
+  { nom:"hiems", gen:"hiemis", g:"f", ch:13, decl:3, mng:"winter" },
+  { nom:"hōra", gen:"hōrae", g:"f", ch:13, decl:1, mng:"hour" },
+  { nom:"īdūs", gen:"īduum", g:"f pl", ch:13, decl:4, mng:"ides" },
+  { nom:"imber", gen:"imbris", g:"m", ch:13, decl:3, mng:"rain" },
+  { nom:"initium", gen:"initiī", g:"n", ch:13, decl:2, mng:"beginning" },
+  { nom:"kalendae", gen:"kalendārum", g:"f pl", ch:13, decl:1, mng:"kalends" },
+  { nom:"kalendārium", gen:"kalendāriī", g:"n", ch:13, decl:2, mng:"calendar" },
+  { nom:"lacus", gen:"lacūs", g:"m", ch:13, decl:4, mng:"lake" },
+  { nom:"lūna", gen:"lūnae", g:"f", ch:13, decl:1, mng:"moon" },
+  { nom:"lūx", gen:"lūcis", g:"f", ch:13, decl:3, mng:"light" },
+  { nom:"mēnsis", gen:"mēnsis", g:"m", ch:13, decl:3, mng:"month" },
+  { nom:"merīdiēs", gen:"merīdiēī", g:"m", ch:13, decl:5, mng:"midday" },
+  { nom:"nix", gen:"nivis", g:"f", ch:13, decl:3, mng:"snow" },
+  { nom:"nōnae", gen:"nōnārum", g:"f", ch:13, decl:1, mng:"nones" },
+  { nom:"nox", gen:"noctis", g:"f", ch:13, decl:3, mng:"night" },
+  { nom:"saeculum", gen:"saeculī", g:"n", ch:13, decl:2, mng:"century" },
+  { nom:"stēlla", gen:"stēllae", g:"f", ch:13, decl:1, mng:"star" },
+  { nom:"tempus", gen:"temporis", g:"n", ch:13, decl:3, mng:"time" },
+  { nom:"urbs", gen:"urbis", g:"f", ch:13, decl:3, mng:"city" },
+  { nom:"vēr", gen:"vēris", g:"n", ch:13, decl:3, mng:"spring" },
+  { nom:"vesper", gen:"vesperī", g:"m", ch:13, decl:2, mng:"evening" },
+  { nom:"calceus", gen:"calceī", g:"m", ch:14, decl:2, mng:"shoe" },
+  { nom:"gallus", gen:"gallī", g:"m", ch:14, decl:2, mng:"cock" },
+  { nom:"parentēs", gen:"parentum", g:"m pl", ch:14, decl:3, mng:"parents" },
+  { nom:"rēgula", gen:"rēgulae", g:"f", ch:14, decl:1, mng:"ruler" },
+  { nom:"rēs", gen:"reī", g:"f", ch:14, decl:5, mng:"thing" },
+  { nom:"stilus", gen:"stilī", g:"m", ch:14, decl:2, mng:"stylus" },
+  { nom:"tabula", gen:"tabulae", g:"f", ch:14, decl:1, mng:"writing-tablet" },
+  { nom:"toga", gen:"togae", g:"f", ch:14, decl:1, mng:"toga" },
+  { nom:"tunica", gen:"tunicae", g:"f", ch:14, decl:1, mng:"tunic" },
+  { nom:"vestīmentum", gen:"vestīmentī", g:"n", ch:14, decl:2, mng:"garment" },
+  { nom:"discipulus", gen:"discipulī", g:"m", ch:15, decl:2, mng:"pupil" },
+  { nom:"iānua", gen:"iānuae", g:"f", ch:15, decl:1, mng:"door" },
+  { nom:"lectulus", gen:"lectulī", g:"m", ch:15, decl:2, mng:"bed" },
+  { nom:"lūdus", gen:"lūdī", g:"m", ch:15, decl:2, mng:"play" },
+  { nom:"magister", gen:"magistrī", g:"m", ch:15, decl:2, mng:"schoolmaster" },
+  { nom:"malum", gen:"malī", g:"n", ch:15, decl:2, mng:"evil" },
+  { nom:"sella", gen:"sellae", g:"f", ch:15, decl:1, mng:"stool" },
+  { nom:"tergum", gen:"tergī", g:"n", ch:15, decl:2, mng:"back" },
+  { nom:"virga", gen:"virgae", g:"f", ch:15, decl:1, mng:"rod" },
+  { nom:"altum", gen:"altī", g:"n", ch:16, decl:2, mng:"the open sea" },
+  { nom:"flūctus", gen:"flūctūs", g:"m", ch:16, decl:4, mng:"wave" },
+  { nom:"fulgur", gen:"fulguris", g:"n", ch:16, decl:3, mng:"flash of lightning" },
+  { nom:"gubernātor", gen:"gubernātōris", g:"m", ch:16, decl:3, mng:"steersman" },
+  { nom:"locus", gen:"locī", g:"m", ch:16, decl:2, mng:"place" },
+  { nom:"merx", gen:"mercis", g:"f", ch:16, decl:3, mng:"commodity" },
+  { nom:"multum", gen:"multi", g:"n", ch:16, decl:2, mng:"a lot" },
+  { nom:"nauta", gen:"nautae", g:"m", ch:16, decl:1, mng:"sailor" },
+  { nom:"nāvis", gen:"nāvis", g:"f", ch:16, decl:3, mng:"ship" },
+  { nom:"occidēns", gen:"occidentis", g:"m", ch:16, decl:3, mng:"west" },
+  { nom:"ōra", gen:"ōrae", g:"f", ch:16, decl:1, mng:"border" },
+  { nom:"oriēns", gen:"orientis", g:"m", ch:16, decl:3, mng:"east" },
+  { nom:"portus", gen:"portūs", g:"m", ch:16, decl:4, mng:"harbor" },
+  { nom:"puppis", gen:"puppis", g:"f", ch:16, decl:3, mng:"stern" },
+  { nom:"septentriōnēs", gen:"septentriōnum", g:"m pl", ch:16, decl:3, mng:"north" },
+  { nom:"tempestās", gen:"tempestātis", g:"f", ch:16, decl:3, mng:"storm" },
+  { nom:"tonitrus", gen:"tonitrūs", g:"m", ch:16, decl:4, mng:"thunder" },
+  { nom:"vēlum", gen:"vēlī", g:"n", ch:16, decl:2, mng:"sail" },
+  { nom:"ventus", gen:"ventī", g:"m", ch:16, decl:2, mng:"wind" },
+  { nom:"as", gen:"assis", g:"m", ch:17, decl:3, mng:"as" },
+  { nom:"dēnārius", gen:"dēnāriī", g:"m", ch:17, decl:2, mng:"denarius" },
+  { nom:"respōnsum", gen:"respōnsī", g:"n", ch:17, decl:2, mng:"answer" },
+  { nom:"apis", gen:"apis", g:"f", ch:18, decl:3, mng:"bee" },
+  { nom:"bēstiola", gen:"bēstiolae", g:"f", ch:18, decl:1, mng:"small animal" },
+  { nom:"calamus", gen:"calamī", g:"m", ch:18, decl:2, mng:"reed" },
+  { nom:"cēra", gen:"cērae", g:"f", ch:18, decl:1, mng:"wax" },
+  { nom:"charta", gen:"chartae", g:"f", ch:18, decl:1, mng:"paper" },
+  { nom:"cōnsonāns", gen:"cōnsonantis", g:"f", ch:18, decl:3, mng:"consonant" },
+  { nom:"epistula", gen:"epistulae", g:"f", ch:18, decl:1, mng:"letter" },
+  { nom:"erus", gen:"erī", g:"m", ch:18, decl:2, mng:"master" },
+  { nom:"ferrum", gen:"ferrī", g:"n", ch:18, decl:2, mng:"iron" },
+  { nom:"māteria", gen:"māteriae", g:"f", ch:18, decl:1, mng:"material" },
+  { nom:"mendum", gen:"mendī", g:"n", ch:18, decl:2, mng:"mistake" },
+  { nom:"mercēs", gen:"mercēdis", g:"f", ch:18, decl:3, mng:"hire" },
+  { nom:"papȳrus", gen:"papȳrī", g:"f", ch:18, decl:2, mng:"papyrus" },
+  { nom:"sententia", gen:"sententiae", g:"f", ch:18, decl:1, mng:"opinion" },
+  { nom:"vōcālis", gen:"vōcālis", g:"f", ch:18, decl:3, mng:"vowel" },
+  { nom:"zephyrus", gen:"zephyrī", g:"m", ch:18, decl:2, mng:"west wind" },
+  { nom:"adulēscēns", gen:"adulēscentis", g:"m", ch:19, decl:3, mng:"young man" },
+  { nom:"amāns", gen:"amantis", g:"m", ch:19, decl:3, mng:"lover" },
+  { nom:"amor", gen:"amōris", g:"m", ch:19, decl:3, mng:"love" },
+  { nom:"columna", gen:"columnae", g:"f", ch:19, decl:1, mng:"column" },
+  { nom:"coniūnx", gen:"coniugis", g:"m/f", ch:19, decl:3, mng:"consort" },
+  { nom:"dea", gen:"deae", g:"f", ch:19, decl:1, mng:"goddess" },
+  { nom:"domus", gen:"domūs", g:"f", ch:19, decl:4, mng:"house" },
+  { nom:"dōnum", gen:"dōnī", g:"n", ch:19, decl:2, mng:"gift" },
+  { nom:"flōs", gen:"flōris", g:"m", ch:19, decl:3, mng:"flower" },
+  { nom:"forum", gen:"forī", g:"n", ch:19, decl:2, mng:"square" },
+  { nom:"marītus", gen:"marīti", g:"m", ch:19, decl:2, mng:"husband" },
+  { nom:"mātrōna", gen:"mātrōnae", g:"f", ch:19, decl:1, mng:"married woman" },
+  { nom:"pulchritūdō", gen:"pulchritūdinis", g:"f", ch:19, decl:3, mng:"beauty" },
+  { nom:"signum", gen:"signī", g:"n", ch:19, decl:2, mng:"sign" },
+  { nom:"tēctum", gen:"tēctī", g:"n", ch:19, decl:2, mng:"roof" },
+  { nom:"templum", gen:"templī", g:"n", ch:19, decl:2, mng:"temple" },
+  { nom:"uxor", gen:"uxōris", g:"f", ch:19, decl:3, mng:"wife" },
+  { nom:"virgō", gen:"virginis", g:"f", ch:19, decl:3, mng:"maiden" },
+  { nom:"colloquium", gen:"colloquiī", g:"n", ch:20, decl:2, mng:"conversation" },
+  { nom:"cūnae", gen:"cūnārum", g:"f", ch:20, decl:1, mng:"cradle" },
+  { nom:"fīliola", gen:"fīliolae", g:"f", ch:20, decl:1, mng:"little daughter" },
+  { nom:"fīliolus", gen:"fīliolī", g:"m", ch:20, decl:2, mng:"little son" },
+  { nom:"gradus", gen:"gradūs", g:"m", ch:20, decl:4, mng:"step" },
+  { nom:"īnfāns", gen:"īnfantis", g:"m/f", ch:20, decl:3, mng:"little child" },
+  { nom:"lac", gen:"lactis", g:"n", ch:20, decl:3, mng:"milk" },
+  { nom:"mulier", gen:"mulieris", g:"f", ch:20, decl:3, mng:"woman" },
+  { nom:"nūtrīx", gen:"nūtrīcis", g:"f", ch:20, decl:3, mng:"nurse" },
+  { nom:"officium", gen:"officiī", g:"n", ch:20, decl:2, mng:"duty" },
+  { nom:"sermō", gen:"sermōnis", g:"m", ch:20, decl:3, mng:"talk" },
+  { nom:"silentium", gen:"silentiī", g:"n", ch:20, decl:2, mng:"silence" },
+  { nom:"somnus", gen:"somnī", g:"m", ch:20, decl:2, mng:"sleep" },
+  { nom:"tata", gen:"tatae", g:"m", ch:20, decl:1, mng:"daddy" },
+  { nom:"bōs", gen:"bovis", g:"m/f", ch:21, decl:3, mng:"ox" },
+  { nom:"causa", gen:"causae", g:"f", ch:21, decl:1, mng:"cause" },
+  { nom:"cornū", gen:"cornūs", g:"n", ch:21, decl:4, mng:"horn" },
+  { nom:"cruor", gen:"cruōris", g:"m", ch:21, decl:3, mng:"blood-stained" },
+  { nom:"genū", gen:"genūs", g:"n", ch:21, decl:4, mng:"knee" },
+  { nom:"humus", gen:"humī", g:"f", ch:21, decl:2, mng:"ground" },
+  { nom:"porcus", gen:"porcī", g:"m", ch:21, decl:2, mng:"pig" },
+  { nom:"pugna", gen:"pugnae", g:"f", ch:21, decl:1, mng:"fight" },
+  { nom:"solum", gen:"solī", g:"n", ch:21, decl:2, mng:"soil" },
+  { nom:"sordēs", gen:"sordium", g:"f pl", ch:21, decl:3, mng:"dirt" },
+  { nom:"tabella", gen:"tabellae", g:"f", ch:21, decl:1, mng:"writing tablet" },
+  { nom:"vestis", gen:"vestis", g:"f", ch:21, decl:3, mng:"clothes" },
+  { nom:"aurum", gen:"aurī", g:"n", ch:22, decl:2, mng:"gold" },
+  { nom:"cardō", gen:"cardinis", g:"m", ch:22, decl:3, mng:"hinge" },
+  { nom:"catēna", gen:"catēnae", g:"f", ch:22, decl:1, mng:"chain" },
+  { nom:"faber", gen:"fabrī", g:"m", ch:22, decl:2, mng:"craftsman" },
+  { nom:"foris", gen:"foris", g:"f", ch:22, decl:3, mng:"leaf of a door" },
+  { nom:"iānitor", gen:"iānitōris", g:"m", ch:22, decl:3, mng:"door keeper" },
+  { nom:"imāgō", gen:"imāginis", g:"f", ch:22, decl:3, mng:"picture" },
+  { nom:"lignum", gen:"lignī", g:"n", ch:22, decl:2, mng:"wood" },
+  { nom:"līmen", gen:"līminis", g:"n", ch:22, decl:3, mng:"threshold" },
+  { nom:"pallium", gen:"palliī", g:"n", ch:22, decl:2, mng:"cloak" },
+  { nom:"tabellārius", gen:"tabellārii", g:"m", ch:22, decl:2, mng:"letter carrier" },
+  { nom:"clāvis", gen:"clāvis", g:"f", ch:23, decl:3, mng:"key" },
+  { nom:"comes", gen:"comitis", g:"m/f", ch:23, decl:3, mng:"companion" },
+  { nom:"factum", gen:"factī", g:"n", ch:23, decl:2, mng:"deed" },
+  { nom:"laus", gen:"laudis", g:"f", ch:23, decl:3, mng:"praise" },
+  { nom:"prōmissum", gen:"prōmissī", g:"n", ch:23, decl:2, mng:"promise" },
+  { nom:"pudor", gen:"pudōris", g:"m", ch:23, decl:3, mng:"shame" },
+  { nom:"verbera", gen:"verberum", g:"n pl", ch:23, decl:3, mng:"lashes" },
+  { nom:"vultus", gen:"vultūs", g:"m", ch:23, decl:4, mng:"countenance" },
+  { nom:"dolor", gen:"dolōris", g:"m", ch:24, decl:3, mng:"pain" },
+  { nom:"latus", gen:"lateris", g:"n", ch:24, decl:3, mng:"side" },
+  { nom:"os", gen:"ossis", g:"n", ch:24, decl:3, mng:"bone" },
+  { nom:"sonus", gen:"sonī", g:"m", ch:24, decl:2, mng:"sound" },
+  { nom:"strepitus", gen:"strepitūs", g:"m", ch:24, decl:4, mng:"noise" },
+  { nom:"tumultus", gen:"tumultūs", g:"m", ch:24, decl:4, mng:"uproar" },
+  { nom:"aedificium", gen:"aedificiī", g:"n", ch:25, decl:2, mng:"building" },
+  { nom:"agnus", gen:"agnī", g:"m", ch:25, decl:2, mng:"lamb" },
+  { nom:"auxilium", gen:"auxiliī", g:"n", ch:25, decl:2, mng:"help" },
+  { nom:"cīvis", gen:"cīvis", g:"m/f", ch:25, decl:3, mng:"citizen" },
+  { nom:"cōnspectus", gen:"cōnspectūs", g:"m", ch:25, decl:4, mng:"sight" },
+  { nom:"cupiditās", gen:"cupiditātis", g:"f", ch:25, decl:3, mng:"desire" },
+  { nom:"currus", gen:"currūs", g:"m", ch:25, decl:4, mng:"chariot" },
+  { nom:"exitus", gen:"exitūs", g:"m", ch:25, decl:4, mng:"exit" },
+  { nom:"expugnātiō", gen:"expugnātiōnis", g:"f", ch:25, decl:3, mng:"conquest" },
+  { nom:"fābula", gen:"fābulae", g:"f", ch:25, decl:1, mng:"story" },
+  { nom:"fīlum", gen:"fīlī", g:"n", ch:25, decl:2, mng:"thread" },
+  { nom:"glōria", gen:"glōriae", g:"f", ch:25, decl:1, mng:"glory" },
+  { nom:"labyrinthus", gen:"labyrinthī", g:"m", ch:25, decl:2, mng:"labyrinth" },
+  { nom:"lītus", gen:"lītoris", g:"n", ch:25, decl:3, mng:"beach" },
+  { nom:"moenia", gen:"moenium", g:"n pl", ch:25, decl:3, mng:"walls" },
+  { nom:"mōnstrum", gen:"mōnstrī", g:"n", ch:25, decl:2, mng:"monster" },
+  { nom:"mora", gen:"morae", g:"f", ch:25, decl:1, mng:"delay" },
+  { nom:"mors", gen:"mortis", g:"f", ch:25, decl:3, mng:"death" },
+  { nom:"nārrātiō", gen:"nārrātiōnis", g:"f", ch:25, decl:3, mng:"narrative" },
+  { nom:"nex", gen:"necis", g:"f", ch:25, decl:3, mng:"killing" },
+  { nom:"rēx", gen:"rēgis", g:"m", ch:25, decl:3, mng:"king" },
+  { nom:"saxum", gen:"saxī", g:"n", ch:25, decl:2, mng:"rock" },
+  { nom:"taurus", gen:"taurī", g:"m", ch:25, decl:2, mng:"bull" },
+  { nom:"ars", gen:"artis", g:"f", ch:26, decl:3, mng:"art" },
+  { nom:"carcer", gen:"carceris", g:"m", ch:26, decl:3, mng:"prison" },
+  { nom:"cāsus", gen:"cāsūs", g:"m", ch:26, decl:4, mng:"fall" },
+  { nom:"cōnsilium", gen:"cōnsiliī", g:"n", ch:26, decl:2, mng:"advice" },
+  { nom:"fuga", gen:"fugae", g:"f", ch:26, decl:1, mng:"flight" },
+  { nom:"ignis", gen:"ignis", g:"m", ch:26, decl:3, mng:"fire" },
+  { nom:"lacertus", gen:"lacertī", g:"m", ch:26, decl:2, mng:"arm" },
+  { nom:"lībertās", gen:"lībertātis", g:"f", ch:26, decl:3, mng:"freedom" },
+  { nom:"nātūra", gen:"nātūrae", g:"f", ch:26, decl:1, mng:"nature" },
+  { nom:"opus", gen:"operis", g:"n", ch:26, decl:3, mng:"work" },
+  { nom:"orbis", gen:"orbis", g:"m", ch:26, decl:3, mng:"circle" },
+  { nom:"paenīnsula", gen:"paenīnsulae", g:"f", ch:26, decl:1, mng:"peninsula" },
+  { nom:"penna", gen:"pennae", g:"f", ch:26, decl:1, mng:"feather" },
+  { nom:"ager", gen:"agrī", g:"m", ch:27, decl:2, mng:"field" },
+  { nom:"agricola", gen:"agricolae", g:"m", ch:27, decl:1, mng:"farmer" },
+  { nom:"arātor", gen:"arātōris", g:"m", ch:27, decl:3, mng:"plowman" },
+  { nom:"arātrum", gen:"arātrī", g:"n", ch:27, decl:2, mng:"plow" },
+  { nom:"calor", gen:"calōris", g:"m", ch:27, decl:3, mng:"warmth" },
+  { nom:"colōnus", gen:"colōnī", g:"m", ch:27, decl:2, mng:"farmer" },
+  { nom:"cōpia", gen:"cōpiae", g:"f", ch:27, decl:1, mng:"abundance" },
+  { nom:"cūra", gen:"cūrae", g:"f", ch:27, decl:1, mng:"care" },
+  { nom:"falx", gen:"falcis", g:"f", ch:27, decl:3, mng:"sickle" },
+  { nom:"frīgus", gen:"frīgoris", g:"n", ch:27, decl:3, mng:"cold" },
+  { nom:"frūgēs", gen:"frūgum", g:"f pl", ch:27, decl:3, mng:"fruit" },
+  { nom:"frūmentum", gen:"frūmentī", g:"n", ch:27, decl:2, mng:"corn" },
+  { nom:"gravida", gen:"gravidae", g:"f", ch:27, decl:1, mng:"pregnant" },
+  { nom:"grex", gen:"gregis", g:"m", ch:27, decl:3, mng:"flock" },
+  { nom:"īnstrūmentum", gen:"īnstrūmentī", g:"n", ch:27, decl:2, mng:"tool" },
+  { nom:"labor", gen:"labōris", g:"m", ch:27, decl:3, mng:"work" },
+  { nom:"lāna", gen:"lānae", g:"f", ch:27, decl:1, mng:"wool" },
+  { nom:"loca", gen:"locōrum", g:"n pl", ch:27, decl:2, mng:"regions" },
+  { nom:"negōtium", gen:"negōtiī", g:"n", ch:27, decl:2, mng:"business" },
+  { nom:"ōtium", gen:"ōtiī", g:"n", ch:27, decl:2, mng:"leisure" },
+  { nom:"pābulum", gen:"pābulī", g:"n", ch:27, decl:2, mng:"fodder" },
+  { nom:"patientia", gen:"patientiae", g:"f", ch:27, decl:1, mng:"forbearance" },
+  { nom:"pecus", gen:"pecoris", g:"n", ch:27, decl:3, mng:"livestock" },
+  { nom:"praedium", gen:"praediī", g:"n", ch:27, decl:2, mng:"estate" },
+  { nom:"precēs", gen:"precum", g:"f pl", ch:27, decl:3, mng:"prayers" },
+  { nom:"regiō", gen:"regiōnis", g:"f", ch:27, decl:3, mng:"region" },
+  { nom:"rūs", gen:"rūris", g:"n", ch:27, decl:3, mng:"the country" },
+  { nom:"sēmen", gen:"sēminis", g:"n", ch:27, decl:3, mng:"seed" },
+  { nom:"ūva", gen:"ūvae", g:"f", ch:27, decl:1, mng:"grape" },
+  { nom:"vīnea", gen:"vīneae", g:"f", ch:27, decl:1, mng:"vinyard" },
+  { nom:"vīnum", gen:"vīnī", g:"n", ch:27, decl:2, mng:"wine" },
+  { nom:"vītis", gen:"vītis", g:"f", ch:27, decl:3, mng:"vine" },
+  { nom:"animus", gen:"animī", g:"m", ch:28, decl:2, mng:"mind" },
+  { nom:"dictum", gen:"dictī", g:"n", ch:28, decl:2, mng:"saying" },
+  { nom:"fāma", gen:"fāmae", g:"f", ch:28, decl:1, mng:"fame" },
+  { nom:"fretum", gen:"fretī", g:"n", ch:28, decl:2, mng:"strait" },
+  { nom:"Īnferī", gen:"Īnferōrum", g:"m pl", ch:28, decl:2, mng:"the underworld" },
+  { nom:"libellus", gen:"libellī", g:"m", ch:28, decl:2, mng:"little book" },
+  { nom:"mundus", gen:"mundī", g:"m", ch:28, decl:2, mng:"clean" },
+  { nom:"nāvicula", gen:"nāviculae", g:"f", ch:28, decl:1, mng:"boat" },
+  { nom:"pecūlium", gen:"pecūliī", g:"n", ch:28, decl:2, mng:"money given to slaves" },
+  { nom:"perīculum", gen:"perīculī", g:"n", ch:28, decl:2, mng:"trial" },
+  { nom:"phantasma", gen:"phantasmatis", g:"n", ch:28, decl:3, mng:"ghost" },
+  { nom:"potestās", gen:"potestātis", g:"f", ch:28, decl:3, mng:"power" },
+  { nom:"praedō", gen:"praedōnis", g:"m", ch:28, decl:3, mng:"robber" },
+  { nom:"prīnceps", gen:"prīncipis", g:"m", ch:28, decl:3, mng:"chief" },
+  { nom:"tībiae", gen:"tībiārum", g:"f pl", ch:28, decl:1, mng:"flute" },
+  { nom:"tībīcen", gen:"tībīcinis", g:"m", ch:28, decl:3, mng:"flute-player" },
+  { nom:"tranquillitās", gen:"tranquillitātis", g:"f", ch:28, decl:3, mng:"calmness" },
+  { nom:"turba", gen:"turbae", g:"f", ch:28, decl:1, mng:"throng" },
+  { nom:"vigilia", gen:"vigiliae", g:"f", ch:28, decl:1, mng:"night watch" },
+  { nom:"vorāgō", gen:"vorāginis", g:"f", ch:28, decl:3, mng:"abyss" },
+  { nom:"beneficium", gen:"beneficiī", g:"n", ch:29, decl:2, mng:"benefit" },
+  { nom:"cantus", gen:"cantūs", g:"m", ch:29, decl:4, mng:"singing" },
+  { nom:"carmen", gen:"carminis", g:"n", ch:29, decl:3, mng:"song" },
+  { nom:"delphīnus", gen:"delphīnī", g:"m", ch:29, decl:2, mng:"dolphin" },
+  { nom:"dīvitiae", gen:"dīvitiārum", g:"f pl", ch:29, decl:1, mng:"riches" },
+  { nom:"dorsum", gen:"dorsī", g:"n", ch:29, decl:2, mng:"back" },
+  { nom:"fēlīcitās", gen:"fēlīcitātis", g:"f", ch:29, decl:3, mng:"good fortune" },
+  { nom:"fidēs", gen:"fidium", g:"f pl", ch:29, decl:3, mng:"lyre" },
+  { nom:"fidicen", gen:"fidicinis", g:"m", ch:29, decl:3, mng:"lyre-player" },
+  { nom:"fortūna", gen:"fortūnae", g:"f", ch:29, decl:1, mng:"fortune" },
+  { nom:"fundus", gen:"fundī", g:"m", ch:29, decl:2, mng:"bottom" },
+  { nom:"fūr", gen:"fūris", g:"m", ch:29, decl:3, mng:"thief" },
+  { nom:"fūrtum", gen:"fūrtī", g:"n", ch:29, decl:2, mng:"theft" },
+  { nom:"iactūra", gen:"iactūrae", g:"f", ch:29, decl:1, mng:"throwing away" },
+  { nom:"invidia", gen:"invidiae", g:"f", ch:29, decl:1, mng:"envy" },
+  { nom:"laetitia", gen:"laetitiae", g:"f", ch:29, decl:1, mng:"joy" },
+  { nom:"lucrum", gen:"lucrī", g:"n", ch:29, decl:2, mng:"profit" },
+  { nom:"maleficium", gen:"maleficiī", g:"n", ch:29, decl:2, mng:"evil deed" },
+  { nom:"nāvigātiō", gen:"nāvigātiōnis", g:"f", ch:29, decl:3, mng:"sailing" },
+  { nom:"piscātor", gen:"piscātōris", g:"m", ch:29, decl:3, mng:"fisherman" },
+  { nom:"rēmus", gen:"rēmī", g:"m", ch:29, decl:2, mng:"oar" },
+  { nom:"salūs", gen:"salūtis", g:"f", ch:29, decl:3, mng:"safety" },
+  { nom:"spēs", gen:"speī", g:"f", ch:29, decl:5, mng:"hope" },
+  { nom:"trīstitia", gen:"trīstitiae", g:"f", ch:29, decl:1, mng:"sadness" },
+  { nom:"tyrannus", gen:"tyrannī", g:"m", ch:29, decl:2, mng:"tyrant" },
+  { nom:"vīta", gen:"vītae", g:"f", ch:29, decl:1, mng:"life" },
+  { nom:"argentum", gen:"argentī", g:"n", ch:30, decl:2, mng:"silver" },
+  { nom:"balneum", gen:"balneī", g:"n", ch:30, decl:2, mng:"bath" },
+  { nom:"bonum", gen:"bonī", g:"n", ch:30, decl:2, mng:"good" },
+  { nom:"carō", gen:"carnis", g:"f", ch:30, decl:3, mng:"flesh" },
+  { nom:"cēna", gen:"cēnae", g:"f", ch:30, decl:1, mng:"dinner" },
+  { nom:"cocus", gen:"cocī", g:"m", ch:30, decl:2, mng:"cook" },
+  { nom:"convīva", gen:"convīvae", g:"m/f", ch:30, decl:1, mng:"guest" },
+  { nom:"convīvium", gen:"convīviī", g:"n", ch:30, decl:2, mng:"dinner party" },
+  { nom:"culīna", gen:"culīnae", g:"f", ch:30, decl:1, mng:"kitchen" },
+  { nom:"famēs", gen:"famis", g:"f", ch:30, decl:3, mng:"hunger" },
+  { nom:"genus", gen:"generis", g:"n", ch:30, decl:3, mng:"kind" },
+  { nom:"holus", gen:"holeris", g:"n", ch:30, decl:3, mng:"vegetable" },
+  { nom:"hospes", gen:"hospitis", g:"m", ch:30, decl:3, mng:"guest" },
+  { nom:"iter", gen:"itineris", g:"n", ch:30, decl:3, mng:"journey" },
+  { nom:"lībertīnus", gen:"lībertīnī", g:"m", ch:30, decl:2, mng:"freedman" },
+  { nom:"mel", gen:"mellis", g:"n", ch:30, decl:3, mng:"honey" },
+  { nom:"merum", gen:"merī", g:"n", ch:30, decl:2, mng:"unmixed" },
+  { nom:"minister", gen:"ministrī", g:"m", ch:30, decl:2, mng:"servant" },
+  { nom:"nux", gen:"nucis", g:"f", ch:30, decl:3, mng:"nut" },
+  { nom:"sāl", gen:"salis", g:"m", ch:30, decl:3, mng:"salt" },
+  { nom:"sitis", gen:"sitis", g:"f", ch:30, decl:3, mng:"thirst" },
+  { nom:"trīclīnium", gen:"trīclīniī", g:"n", ch:30, decl:2, mng:"dining room" },
+  { nom:"valētūdō", gen:"valētūdinis", g:"f", ch:30, decl:3, mng:"health" },
+  { nom:"vās", gen:"vāsis", g:"n", ch:30, decl:3, mng:"vessel" },
+  { nom:"crux", gen:"crucis", g:"f", ch:31, decl:3, mng:"cross" },
+  { nom:"fidēs", gen:"fideī", g:"f", ch:31, decl:5, mng:"lyre" },
+  { nom:"fugitīvus", gen:"fugitīvī", g:"m", ch:31, decl:2, mng:"fugitive" },
+  { nom:"iniūria", gen:"iniūriae", g:"f", ch:31, decl:1, mng:"injustice" },
+  { nom:"īnscrīptiō", gen:"īnscrīptiōnis", g:"f", ch:31, decl:3, mng:"inscription" },
+  { nom:"iūs", gen:"iūris", g:"n", ch:31, decl:3, mng:"right" },
+  { nom:"iuvenis", gen:"iuvenis", g:"m/f", ch:31, decl:3, mng:"young person" },
+  { nom:"lēx", gen:"lēgis", g:"f", ch:31, decl:3, mng:"law" },
+  { nom:"memoria", gen:"memoriae", g:"f", ch:31, decl:1, mng:"memory" },
+  { nom:"mōs", gen:"mōris", g:"m", ch:31, decl:3, mng:"custom" },
+  { nom:"mūnus", gen:"mūneris", g:"n", ch:31, decl:3, mng:"a service" },
+  { nom:"nūgae", gen:"nūgārum", g:"f", ch:31, decl:1, mng:"idle talk" },
+  { nom:"parricīda", gen:"parricīdae", g:"m/f", ch:31, decl:1, mng:"parricide" },
+  { nom:"poena", gen:"poenae", g:"f", ch:31, decl:1, mng:"punishment" },
+  { nom:"pōtiō", gen:"pōtiōnis", g:"f", ch:31, decl:3, mng:"drinking" },
+  { nom:"praemium", gen:"praemiī", g:"n", ch:31, decl:2, mng:"reward" },
+  { nom:"rūmor", gen:"rūmōris", g:"m", ch:31, decl:3, mng:"rumor" },
+  { nom:"scelus", gen:"sceleris", g:"n", ch:31, decl:3, mng:"crime" },
+  { nom:"senex", gen:"senis", g:"m", ch:31, decl:3, mng:"old man" },
+  { nom:"supplicium", gen:"suppliciī", g:"n", ch:31, decl:2, mng:"punishment" },
+  { nom:"amīcitia", gen:"amīcitiae", g:"f", ch:32, decl:1, mng:"friendship" },
+  { nom:"amphitheātrum", gen:"amphitheātrī", g:"n", ch:32, decl:2, mng:"amphitheater" },
+  { nom:"audācia", gen:"audāciae", g:"f", ch:32, decl:1, mng:"boldness" },
+  { nom:"classis", gen:"classis", g:"f", ch:32, decl:3, mng:"fleet" },
+  { nom:"condiciō", gen:"condiciōnis", g:"f", ch:32, decl:3, mng:"condition" },
+  { nom:"cursus", gen:"cursūs", g:"m", ch:32, decl:4, mng:"race" },
+  { nom:"gēns", gen:"gentis", g:"f", ch:32, decl:3, mng:"nation" },
+  { nom:"grātia", gen:"grātiae", g:"f", ch:32, decl:1, mng:"favor" },
+  { nom:"incola", gen:"incolae", g:"m/f", ch:32, decl:1, mng:"inhabitant" },
+  { nom:"inopia", gen:"inopiae", g:"f", ch:32, decl:1, mng:"lack" },
+  { nom:"pīrāta", gen:"pīrātae", g:"m", ch:32, decl:1, mng:"pirate" },
+  { nom:"poēta", gen:"poētae", g:"m/f", ch:32, decl:1, mng:"poet" },
+  { nom:"populus", gen:"populī", g:"m", ch:32, decl:2, mng:"people" },
+  { nom:"servitūs", gen:"servitūtis", g:"f", ch:32, decl:3, mng:"slavery" },
+  { nom:"talentum", gen:"talentī", g:"n", ch:32, decl:2, mng:"talent" },
+  { nom:"victor", gen:"victōris", g:"m", ch:32, decl:3, mng:"conqueror" },
+  { nom:"victōria", gen:"victōriae", g:"f", ch:32, decl:1, mng:"victory" },
+  { nom:"vīrēs", gen:"vīrium", g:"f pl", ch:32, decl:3, mng:"strength" },
+  { nom:"vīs", gen:"vīs", g:"f", ch:32, decl:3, mng:"force" },
+  { nom:"voluntās", gen:"voluntātis", g:"f", ch:32, decl:3, mng:"will" },
+  { nom:"aciēs", gen:"aciēī", g:"f", ch:33, decl:5, mng:"sharp edge" },
+  { nom:"advena", gen:"advenae", g:"m/f", ch:33, decl:1, mng:"outsider" },
+  { nom:"aetās", gen:"aetātis", g:"f", ch:33, decl:3, mng:"age" },
+  { nom:"agmen", gen:"agminis", g:"n", ch:33, decl:3, mng:"army on the march" },
+  { nom:"amnis", gen:"amnis", g:"m", ch:33, decl:3, mng:"river" },
+  { nom:"auxilia", gen:"auxiliōrum", g:"n pl", ch:33, decl:2, mng:"auxiliary forces" },
+  { nom:"caedēs", gen:"caedis", g:"f", ch:33, decl:3, mng:"killing" },
+  { nom:"cohors", gen:"cohortis", g:"f", ch:33, decl:3, mng:"cohort" },
+  { nom:"ēnsis", gen:"ēnsis", g:"m", ch:33, decl:3, mng:"sword" },
+  { nom:"gaudium", gen:"gaudiī", g:"n", ch:33, decl:2, mng:"joy" },
+  { nom:"imperātor", gen:"imperātōris", g:"m", ch:33, decl:3, mng:"general" },
+  { nom:"lēgātus", gen:"lēgātī", g:"m", ch:33, decl:2, mng:"envoy" },
+  { nom:"legiō", gen:"legiōnis", g:"f", ch:33, decl:3, mng:"legion" },
+  { nom:"legiōnārius", gen:"legiōnārii", g:"m", ch:33, decl:2, mng:"legionary" },
+  { nom:"ōrdō", gen:"ōrdinis", g:"m", ch:33, decl:3, mng:"row" },
+  { nom:"pāx", gen:"pācis", g:"f", ch:33, decl:3, mng:"peace" },
+  { nom:"proelium", gen:"proeliī", g:"n", ch:33, decl:2, mng:"battle" },
+  { nom:"ratis", gen:"ratis", g:"f", ch:33, decl:3, mng:"raft" },
+  { nom:"rīpa", gen:"rīpae", g:"f", ch:33, decl:1, mng:"bank" },
+  { nom:"stīpendium", gen:"stīpendiī", g:"n", ch:33, decl:2, mng:"soldier's pay" },
+  { nom:"studium", gen:"studiī", g:"n", ch:33, decl:2, mng:"interest" },
+  { nom:"virtūs", gen:"virtūtis", g:"f", ch:33, decl:3, mng:"valor" },
+  { nom:"vulnus", gen:"vulneris", g:"n", ch:33, decl:3, mng:"wound" },
+  { nom:"anus", gen:"anūs", g:"f", ch:34, decl:4, mng:"old woman" },
+  { nom:"arānea", gen:"arāneae", g:"f", ch:34, decl:1, mng:"spider" },
+  { nom:"aurīga", gen:"aurīgae", g:"m", ch:34, decl:1, mng:"charioteer" },
+  { nom:"bāsium", gen:"bāsiī", g:"n", ch:34, decl:2, mng:"kiss" },
+  { nom:"cachinnus", gen:"cachinnī", g:"m", ch:34, decl:2, mng:"laugh" },
+  { nom:"certāmen", gen:"certāminis", g:"n", ch:34, decl:3, mng:"contest" },
+  { nom:"circēnsēs", gen:"circēnsium", g:"m pl", ch:34, decl:3, mng:"games in the circus" },
+  { nom:"circus", gen:"circī", g:"m", ch:34, decl:2, mng:"circle" },
+  { nom:"cōmoedia", gen:"cōmoediae", g:"f", ch:34, decl:1, mng:"comedy" },
+  { nom:"dactylus", gen:"dactylī", g:"m", ch:34, decl:2, mng:"finger" },
+  { nom:"dēliciae", gen:"dēliciārum", g:"f pl", ch:34, decl:1, mng:"delight" },
+  { nom:"epigramma", gen:"epigrammatis", g:"n", ch:34, decl:3, mng:"epigram" },
+  { nom:"fātum", gen:"fātī", g:"n", ch:34, decl:2, mng:"fate" },
+  { nom:"gladiātor", gen:"gladiātōris", g:"m", ch:34, decl:3, mng:"gladiator" },
+  { nom:"gremium", gen:"gremiī", g:"n", ch:34, decl:2, mng:"lap" },
+  { nom:"ingenium", gen:"ingeniī", g:"n", ch:34, decl:2, mng:"nature" },
+  { nom:"lucerna", gen:"lucernae", g:"f", ch:34, decl:1, mng:"lamp" },
+  { nom:"mēns", gen:"mentis", g:"f", ch:34, decl:3, mng:"mind" },
+  { nom:"nota", gen:"notae", g:"f", ch:34, decl:1, mng:"mark" },
+  { nom:"ocellus", gen:"ocellī", g:"m", ch:34, decl:2, mng:"eye" },
+  { nom:"odium", gen:"odiī", g:"n", ch:34, decl:2, mng:"hatred" },
+  { nom:"opera", gen:"operae", g:"f", ch:34, decl:1, mng:"effort" },
+  { nom:"opēs", gen:"opum", g:"f pl", ch:34, decl:3, mng:"resources" },
+  { nom:"palma", gen:"palmae", g:"f", ch:34, decl:1, mng:"palm" },
+  { nom:"passer", gen:"passeris", g:"m", ch:34, decl:3, mng:"sparrow" },
+  { nom:"prīncipium", gen:"prīncipiī", g:"n", ch:34, decl:2, mng:"beginning" },
+  { nom:"ratiō", gen:"ratiōnis", g:"f", ch:34, decl:3, mng:"reason" },
+  { nom:"rēte", gen:"rētis", g:"n", ch:34, decl:3, mng:"net" },
+  { nom:"rīsus", gen:"rīsūs", g:"m", ch:34, decl:4, mng:"laughter" },
+  { nom:"scalpellum", gen:"scalpellī", g:"n", ch:34, decl:2, mng:"scalpel" },
+  { nom:"sinus", gen:"sinūs", g:"m", ch:34, decl:4, mng:"fold" },
+  { nom:"spectātor", gen:"spectātōris", g:"m", ch:34, decl:3, mng:"spectator" },
+  { nom:"tenebrae", gen:"tenebrārum", g:"f pl", ch:34, decl:1, mng:"darkness" },
+  { nom:"testis", gen:"testis", g:"m/f", ch:34, decl:3, mng:"witness" },
+  { nom:"theātrum", gen:"theātrī", g:"n", ch:34, decl:2, mng:"theater" },
+  { nom:"versiculus", gen:"versiculī", g:"m", ch:34, decl:2, mng:"short verse" },
+  { nom:"admīrātiō", gen:"admīrātiōnis", g:"f", ch:35, decl:3, mng:"wonder" },
+  { nom:"affectus", gen:"affectūs", g:"m", ch:35, decl:4, mng:"mood" },
+  { nom:"īra", gen:"īrae", g:"f", ch:35, decl:1, mng:"anger" },
+  { nom:"mentiō", gen:"mentiōnis", g:"f", ch:35, decl:3, mng:"mention" },
+  { nom:"Mūsa", gen:"Mūsae", g:"f", ch:35, decl:1, mng:"Muse" },
+  { nom:"ōrātiō", gen:"ōrātiōnis", g:"f", ch:35, decl:3, mng:"speech" },
+  { nom:"quālitās", gen:"quālitātis", g:"f", ch:35, decl:3, mng:"quality" },
+  { nom:"quantitās", gen:"quantitātis", g:"f", ch:35, decl:3, mng:"quantity" },
+  { nom:"sacerdōs", gen:"sacerdōtis", g:"m/f", ch:35, decl:3, mng:"priest" },
+  { nom:"scamnum", gen:"scamnī", g:"n", ch:35, decl:2, mng:"stool" },
+  { nom:"significātiō", gen:"significātiōnis", g:"f", ch:35, decl:3, mng:"meaning" },
+];
+
+    var CASES = ["nom","gen","dat","acc","abl"];
+    var NUMS = ["sg","pl"];
+    var CASE_LABELS = { nom:"nōminātīvus", gen:"genitīvus", dat:"datīvus", acc:"accūsātīvus", abl:"ablātīvus" };
+    var NUM_LABELS = { sg:"singulāris", pl:"plūrālis" };
+    var ALL_CHAPTERS = [...new Set(NOUNS.map(function(n){return n.ch}))].sort(function(a,b){return a-b});
+    var ALL_DECLS = [1,2,3,4,5];
+
+    function stripM(s) {
+      return s.replace(/ā/g,"a").replace(/ē/g,"e").replace(/ī/g,"i")
+              .replace(/ō/g,"o").replace(/ū/g,"u").replace(/ȳ/g,"y")
+              .replace(/Ā/g,"A").replace(/Ē/g,"E").replace(/Ī/g,"I")
+              .replace(/Ō/g,"O").replace(/Ū/g,"U");
+    }
+    function isNeuter(g) { return g.indexOf("n") === 0; }
+    function isPlOnly(n) { return / pl$/.test(n.g); }
+    function syllables(w) {
+      var m = stripM(w.toLowerCase()).match(/[aeiouy]+/g);
+      return m ? m.length : 0;
+    }
+
+    // ===== DEFECTIVE / RESTRICTED NOUNS =====
+    // Singular-only: no Latin plural in use.
+    var SG_ONLY = new Set(["sitis","famēs","lac","mel","vēr","sanguis","āēr"]);
+    // 5th declension: only diēs and rēs have a full plural.
+    var D5_WITH_PL = new Set(["diēs","rēs"]);
+
+    // ===== 3RD DECLENSION I-STEM DETERMINATION =====
+    // Forced i-stems the rules below would miss:
+    //   imber, venter (A&G 71: -er nouns with gen -ris), nix (nivium), carō (carnium)
+    var I_STEM_FORCE = new Set(["imber","venter","nix","carō"]);
+    // Parisyllabics in -is that nevertheless take -um:
+    var NON_I = new Set(["canis","iuvenis","pater","māter","frāter"]);
+
+    function isIStem(nom, stem) {
+      if (NON_I.has(nom)) return false;
+      if (I_STEM_FORCE.has(nom)) return true;
+      var bn = stripM(nom);
+      // parisyllabics in -is / -ēs (cīvis, nāvis, nūbēs, caedēs …)
+      if (/(is|es)$/.test(bn) && syllables(nom) === syllables(stem + "is")) return true;
+      // nom. in -ns / -rs (gēns, mōns, ars, cohors, adulēscēns …)
+      if (/(ns|rs)$/.test(bn)) return true;
+      // monosyllables whose stem ends in two consonants (urbs, nox, ars, os …)
+      if (syllables(nom) === 1 && /[^aeiou][^aeiou]$/.test(stripM(stem))) return true;
+      return false;
+    }
+    // neuter i-stems: nom. in -e, -al, -ar (mare, animal, rēte)
+    function isNeuterIStem(nom) {
+      var bn = stripM(nom);
+      return /(e|al|ar)$/.test(bn);
+    }
+
+    // ===== IRREGULAR / SPECIAL PARADIGMS =====
+    // Full or partial overrides. null = form not in use (never asked).
+    // Each cell is an array: first form is canonical, the rest accepted.
+    var SPECIAL = {
+      "vīs":   { sg: { nom:["vīs"], gen:null, dat:null, acc:["vim"], abl:["vī"] },
+                 pl: { nom:["vīrēs"], gen:["vīrium"], dat:["vīribus"], acc:["vīrēs"], abl:["vīribus"] } },
+      "bōs":   { sg: { gen:["bovis"], dat:["bovī"], acc:["bovem"], abl:["bove"] },
+                 pl: { nom:["bovēs"], gen:["boum"], dat:["bōbus","būbus"], acc:["bovēs"], abl:["bōbus","būbus"] } },
+      "vās":   { sg: { gen:["vāsis"], dat:["vāsī"], acc:["vās"], abl:["vāse"] },
+                 pl: { nom:["vāsa"], gen:["vāsōrum"], dat:["vāsīs"], acc:["vāsa"], abl:["vāsīs"] } },
+      "domus": { sg: { gen:["domūs"], dat:["domuī"], acc:["domum"], abl:["domō"] },
+                 pl: { nom:["domūs"], gen:["domuum","domōrum"], dat:["domibus"], acc:["domōs","domūs"], abl:["domibus"] } },
+      "deus":  { pl: { nom:["dī","deī","diī"], gen:["deōrum","deum"], dat:["dīs","deīs","diīs"],
+                       acc:["deōs"], abl:["dīs","deīs","diīs"] } },
+      "sitis": { sg: { acc:["sitim"], abl:["sitī"] } },
+      "famēs": { sg: { abl:["famē"] } },
+      "puppis":{ sg: { acc:["puppim","puppem"], abl:["puppī","puppe"] } },
+      "ignis": { sg: { abl:["igne","ignī"] } },
+      "nāvis": { sg: { abl:["nāve","nāvī"] } },
+      "classis":{ sg: { abl:["classe","classī"] } },
+      "vōcālis":{ sg: { abl:["vōcālī","vōcāle"] } },
+      "cōnsonāns":{ sg: { abl:["cōnsonantī","cōnsonante"] } },
+      "āēr":   { sg: { acc:["āerem","āera"] } },
+      "apis":  { pl: { gen:["apium","apum"] } },
+      "pānis": { pl: { gen:["pānium","pānum"] } },
+      "mēnsis":{ pl: { gen:["mēnsium","mēnsum"] } },
+      "dea":   { pl: { dat:["deābus","deīs"], abl:["deābus","deīs"] } },
+      "fīlia": { pl: { dat:["fīliīs","fīliābus"], abl:["fīliīs","fīliābus"] } },
+      "lacus": { pl: { dat:["lacubus","lacibus"], abl:["lacubus","lacibus"] } },
+      "arcus": { pl: { dat:["arcubus","arcibus"], abl:["arcubus","arcibus"] } }
+    };
+
+    // ===== PARADIGM BUILDER =====
+    function A(x) { return [x]; }
+
+    function buildRegular(n) {
+      var neut = isNeuter(n.g);
+      var plOnly = isPlOnly(n);
+      var stem, iStem = false, nIStem = false;
+      var sg = null, pl = null;
+
+      if (n.decl === 1) {
+        stem = plOnly ? n.gen.slice(0,-4) : n.gen.slice(0,-2);
+        if (!plOnly) sg = { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"ae"), acc:A(stem+"am"), abl:A(stem+"ā") };
+        pl = { nom: plOnly ? A(n.nom) : A(stem+"ae"), gen:A(plOnly ? n.gen : stem+"ārum"),
+               dat:A(stem+"īs"), acc:A(stem+"ās"), abl:A(stem+"īs") };
+      } else if (n.decl === 2) {
+        stem = plOnly ? n.gen.slice(0,-4) : n.gen.slice(0,-1);
+        if (!plOnly) sg = { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"ō"),
+                            acc: neut ? A(n.nom) : A(stem+"um"), abl:A(stem+"ō") };
+        pl = { nom: plOnly ? A(n.nom) : (neut ? A(stem+"a") : A(stem+"ī")),
+               gen:A(plOnly ? n.gen : stem+"ōrum"), dat:A(stem+"īs"),
+               acc: neut ? (plOnly ? A(n.nom) : A(stem+"a")) : A(stem+"ōs"), abl:A(stem+"īs") };
+      } else if (n.decl === 3) {
+        if (plOnly) {
+          var gIum = /ium$/.test(stripM(n.gen));
+          stem = gIum ? n.gen.slice(0,-3) : n.gen.slice(0,-2);
+          pl = { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"ibus"), acc:A(n.nom), abl:A(stem+"ibus") };
+        } else {
+          stem = n.gen.slice(0,-2);
+          nIStem = neut && isNeuterIStem(n.nom);
+          iStem = nIStem || isIStem(n.nom, stem);
+          sg = { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"ī"),
+                 acc: neut ? A(n.nom) : A(stem+"em"),
+                 abl: nIStem ? A(stem+"ī") : A(stem+"e") };
+          pl = { nom: neut ? A(stem+(nIStem?"ia":"a")) : A(stem+"ēs"),
+                 gen:A(stem+(iStem?"ium":"um")), dat:A(stem+"ibus"),
+                 acc: neut ? A(stem+(nIStem?"ia":"a")) : A(stem+"ēs"), abl:A(stem+"ibus") };
+        }
+      } else if (n.decl === 4) {
+        var neut4 = neut;  // genū, cornū
+        stem = plOnly ? n.gen.slice(0,-3) : n.gen.slice(0,-2);
+        if (!plOnly) sg = neut4
+          ? { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"ū"), acc:A(n.nom), abl:A(stem+"ū") }
+          : { nom:A(n.nom), gen:A(n.gen), dat:A(stem+"uī"), acc:A(stem+"um"), abl:A(stem+"ū") };
+        pl = neut4
+          ? { nom:A(stem+"ua"), gen:A(stem+"uum"), dat:A(stem+"ibus"), acc:A(stem+"ua"), abl:A(stem+"ibus") }
+          : { nom: plOnly ? A(n.nom) : A(stem+"ūs"), gen:A(plOnly ? n.gen : stem+"uum"),
+              dat:A(stem+"ibus"), acc:A(stem+"ūs"), abl:A(stem+"ibus") };
+      } else { // 5
+        stem = n.gen.slice(0,-2);
+        sg = { nom:A(n.nom), gen:A(n.gen), dat:A(n.gen), acc:A(stem+"em"), abl:A(stem+"ē") };
+        pl = D5_WITH_PL.has(n.nom)
+          ? { nom:A(stem+"ēs"), gen:A(stem+"ērum"), dat:A(stem+"ēbus"), acc:A(stem+"ēs"), abl:A(stem+"ēbus") }
+          : null;
+      }
+      return { sg: sg, pl: pl };
+    }
+
+    function buildForms(n) {
+      var f = buildRegular(n);
+      var sp = SPECIAL[n.nom];
+      if (sp) {
+        ["sg","pl"].forEach(function(num) {
+          if (!sp[num]) return;
+          if (!f[num]) f[num] = { nom:null, gen:null, dat:null, acc:null, abl:null };
+          CASES.forEach(function(cs) {
+            if (sp[num].hasOwnProperty(cs)) f[num][cs] = sp[num][cs];
+          });
+        });
+      }
+      if (SG_ONLY.has(n.nom)) f.pl = null;
+      if (isPlOnly(n)) f.sg = null;
+      return f;
+    }
+
+    NOUNS.forEach(function(n) { n.forms = buildForms(n); });
+
+    // Valid (case, number) cells for a noun given number mode and clue mode.
+    // In Latin mode nom. sg. is skipped (prompt would equal the answer).
+    function validCells(n, numberMode, latinMode) {
+      var cells = [];
+      NUMS.forEach(function(num) {
+        if (numberMode === "sg" && num !== "sg") return;
+        if (numberMode === "pl" && num !== "pl") return;
+        if (!n.forms[num]) return;
+        CASES.forEach(function(cs) {
+          if (!n.forms[num][cs]) return;
+          if (latinMode && cs === "nom" && num === "sg") return;
+          cells.push({ cs: cs, num: num });
+        });
+      });
+      return cells;
+    }
+
+    // ===== ENGLISH CLUES =====
+    var EN_PL_IRREG = {
+      "man":"men","woman":"women","child":"children","foot":"feet","tooth":"teeth",
+      "ox":"oxen","mouse":"mice","goose":"geese","sheep":"sheep","fish":"fish",
+      "deer":"deer","wife":"wives","knife":"knives","life":"lives","wolf":"wolves","as":"asses",
+      "leaf":"leaves","thief":"thieves","calf":"calves","half":"halves","person":"people"
+    };
+    function enPluralWord(w) {
+      if (EN_PL_IRREG[w]) return EN_PL_IRREG[w];
+      if (/(s|sh|ch|x|z)$/.test(w)) return w + "es";
+      if (/[^aeiou]y$/.test(w)) return w.slice(0,-1) + "ies";
+      return w + "s";
+    }
+    function enPluralPhrase(phrase) {
+      var w = phrase.split(" ");
+      w[w.length-1] = enPluralWord(w[w.length-1]);
+      return w.join(" ");
+    }
+    function enNoun(n, num) {
+      var m = n.mng.replace(/^the\s+/, "");
+      if (num === "pl" && !isPlOnly(n)) m = enPluralPhrase(m);
+      return m;
+    }
+    function getEnglishPrompt(n, cs, num) {
+      var w = enNoun(n, num);
+      // If the English word is the same in both numbers (sheep, fish) and the
+      // noun is drilled in both, tag the prompt with sg./pl.
+      var tag = null;
+      if (n.forms && n.forms.sg && n.forms.pl && enNoun(n, "sg") === enNoun(n, "pl")) {
+        tag = (num === "sg" ? "sg." : "pl.");
+      }
+      var tagStr = tag ? " (" + tag + ")" : "";
+      if (cs === "nom") return w + " (" + (tag ? tag + ", " : "") + "subject)";
+      if (cs === "gen") return "of the " + w + tagStr;
+      if (cs === "dat") return "for or to the " + w + tagStr;
+      if (cs === "acc") return w + " (" + (tag ? tag + ", " : "") + "object)";
+      return "from, with, in, or by the " + w + tagStr;
+    }
+  </script>
+
+  <script>
+    // Student name: URL parameter (works from file://) with localStorage fallback.
+    var STUDENT = (function () {
+      var p = null;
+      try { p = new URLSearchParams(window.location.search).get("n"); } catch (e) {}
+      if (p) {
+        try { localStorage.setItem("exercitiaStudent", p); } catch (e) {}
+        return p;
+      }
+      try { return localStorage.getItem("exercitiaStudent") || ""; } catch (e) { return ""; }
+    })();
+    (function () {
+      var back = document.querySelector("a.back-link");
+      if (back && STUDENT) back.href = "index.html?n=" + encodeURIComponent(STUDENT);
+    })();
+  </script>
+
+  <script type="text/babel">
+    const { useState, useCallback, useRef, useEffect } = React;
+
+    function normalize(s) {
+      return stripM(s.trim().toLowerCase());
+    }
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function postToSheets(payload) {
+      if (!SHEETS_WEBHOOK_URL) return;
+      try {
+        fetch(SHEETS_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) { /* silent fail */ }
+    }
+
+    const linkBtn = {
+      background: "none", border: "none", color: "#a08850", cursor: "pointer",
+      fontFamily: "'Cardo', 'Palatino Linotype', Palatino, Georgia, serif",
+      fontSize: "0.85rem", padding: 0, textDecoration: "underline", textUnderlineOffset: "3px"
+    };
+
+    function App() {
+      const studentName = STUDENT;
+
+      const [selectedChapters, setSelectedChapters] = useState(new Set(ALL_CHAPTERS));
+      const [selectedDecls, setSelectedDecls] = useState(new Set(ALL_DECLS));
+      const [numberMode, setNumberMode] = useState("both"); // "sg", "pl", "both"
+      const [englishMode, setEnglishMode] = useState(false);
+      const [started, setStarted] = useState(false);
+      const [queue, setQueue] = useState([]);
+      const [currentIdx, setCurrentIdx] = useState(0);
+      const [input, setInput] = useState("");
+      const [feedback, setFeedback] = useState(null);
+      const [correctAnswer, setCorrectAnswer] = useState("");
+      const [score, setScore] = useState({ correct: 0, wrong: 0 });
+      const [showPrincipal, setShowPrincipal] = useState(false);
+      const [totalQuestions, setTotalQuestions] = useState(20);
+      const [missed, setMissed] = useState([]);
+      const [mainLength, setMainLength] = useState(0);
+      const [seenNouns, setSeenNouns] = useState(new Set());
+      const [startTime, setStartTime] = useState(null);
+      const [reported, setReported] = useState(false);
+      const inputRef = useRef(null);
+
+      const eligible = (n) =>
+        selectedChapters.has(n.ch) &&
+        selectedDecls.has(n.decl) &&
+        validCells(n, numberMode, !englishMode).length > 0;
+
+      const nounPool = NOUNS.filter(eligible);
+      const totalInChapters = nounPool.length;
+      const totalAvailable = nounPool.filter(n => !seenNouns.has(n.nom + "|" + n.gen)).length;
+
+      useEffect(() => {
+        if (started && inputRef.current) inputRef.current.focus();
+      }, [started, currentIdx, feedback]);
+
+      const startDrill = useCallback(() => {
+        const filtered = NOUNS.filter(n => eligible(n) && !seenNouns.has(n.nom + "|" + n.gen));
+        if (filtered.length === 0) return;
+        const shuffled = shuffle(filtered);
+        const count = Math.min(totalQuestions, shuffled.length);
+        const items = shuffled.slice(0, count).map(noun => {
+          const cells = validCells(noun, numberMode, !englishMode);
+          const cell = cells[Math.floor(Math.random() * cells.length)];
+          return { noun, cs: cell.cs, num: cell.num };
+        });
+        setSeenNouns(prev => {
+          const next = new Set(prev);
+          items.forEach(i => next.add(i.noun.nom + "|" + i.noun.gen));
+          return next;
+        });
+        setQueue(items);
+        setCurrentIdx(0);
+        setInput("");
+        setFeedback(null);
+        setScore({ correct: 0, wrong: 0 });
+        setMissed([]);
+        setMainLength(items.length);
+        setStarted(true);
+        setShowPrincipal(false);
+        setStartTime(Date.now());
+        setReported(false);
+      }, [selectedChapters, selectedDecls, totalQuestions, seenNouns, numberMode, englishMode]);
+
+      const resetSession = () => {
+        setSeenNouns(new Set());
+        setStarted(false);
+      };
+
+      const logout = () => {
+        try { localStorage.removeItem("exercitiaStudent"); } catch (e) {}
+        window.location.href = "index.html";
+      };
+
+      const checkAnswer = () => {
+        if (!input.trim()) return;
+        const item = queue[currentIdx];
+        const accepted = item.noun.forms[item.num][item.cs];
+        const display = accepted.join(" / ");
+        if (accepted.some(a => normalize(input) === normalize(a))) {
+          setFeedback("correct");
+          setScore(s => ({ ...s, correct: s.correct + 1 }));
+          setCorrectAnswer(display);
+        } else {
+          setFeedback("wrong");
+          setScore(s => ({ ...s, wrong: s.wrong + 1 }));
+          setCorrectAnswer(display);
+          setMissed(prev => [...prev, {
+            noun: item.noun, cs: item.cs, num: item.num,
+            wrongAnswer: input.trim(), correctForm: display
+          }]);
+          setQueue(prev => [...prev, { noun: item.noun, cs: item.cs, num: item.num, isRetry: true }]);
+        }
+      };
+
+      const nextQuestion = () => {
+        setCurrentIdx(i => i + 1);
+        setInput("");
+        setFeedback(null);
+        setCorrectAnswer("");
+        setShowPrincipal(false);
+      };
+
+      const toggleChapter = (ch) => {
+        setSelectedChapters(prev => {
+          const next = new Set(prev);
+          if (next.has(ch)) next.delete(ch); else next.add(ch);
+          return next;
+        });
+      };
+      const toggleDecl = (d) => {
+        setSelectedDecls(prev => {
+          const next = new Set(prev);
+          if (next.has(d)) next.delete(d); else next.add(d);
+          return next;
+        });
+      };
+      const selectAll = () => setSelectedChapters(new Set(ALL_CHAPTERS));
+      const selectNone = () => setSelectedChapters(new Set());
+
+      const done = currentIdx >= queue.length && started;
+
+      useEffect(() => {
+        if (done && !reported) {
+          const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+          const pct = queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0;
+          const chapList = [...selectedChapters].sort((a,b) => a - b).join(", ");
+          postToSheets({
+            student: studentName.trim(),
+            exercise: "Dēclīnātiōnēs Nōminum",
+            numberMode: numberMode,
+            declensions: [...selectedDecls].sort().join(", "),
+            clueMode: englishMode ? "English" : "Latin",
+            chapters: chapList,
+            correct: score.correct,
+            total: queue.length,
+            percent: pct,
+            timeSeconds: elapsed,
+            missed: missed.map(m => ({
+              noun: m.noun.nom,
+              case_: m.cs,
+              number: m.num,
+              wrong: m.wrongAnswer,
+              correct: m.correctForm
+            }))
+          });
+          setReported(true);
+        }
+      }, [done]);
+
+      const item = queue[currentIdx];
+
+      if (!studentName) {
+        window.location.href = "index.html";
+        return null;
+      }
+
+      // ====== SETUP SCREEN ======
+      if (!started) {
+        return (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.5rem" }}>
+              <h1 style={{
+                fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+                textTransform: "uppercase", borderBottom: "none",
+                color: "#c9b97a", margin: 0
+              }}>
+                Dēclīnātiōnēs Nōminum
+              </h1>
+              <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                <span style={{ marginRight: "0.75rem" }}>{studentName}</span>
+                <button onClick={logout} style={{ ...linkBtn, fontSize: "0.75rem" }}>ēxī</button>
+              </div>
+            </div>
+            <div style={{ borderBottom: "1px solid #555", marginBottom: "1.5rem" }}></div>
+
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "1.5rem", color: "#b0ab9a" }}>
+              Capitula et dēclīnātiōnēs sēlige et numerum quaestiōnum statue.
+            </p>
+
+            <div style={{ marginBottom: "1.25rem" }}>
+              <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                <button onClick={selectAll} style={linkBtn}>Omnia</button>
+                <button onClick={selectNone} style={linkBtn}>Nūlla</button>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {ALL_CHAPTERS.map(ch => (
+                  <button key={ch} onClick={() => toggleChapter(ch)} style={{
+                    padding: "0.25rem 0.6rem", fontSize: "0.8rem",
+                    border: selectedChapters.has(ch) ? "1px solid #c9b97a" : "1px solid #444",
+                    background: selectedChapters.has(ch) ? "#2a2824" : "transparent",
+                    color: selectedChapters.has(ch) ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {ch}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Dēclīnātiō:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {ALL_DECLS.map(d => (
+                  <button key={d} onClick={() => toggleDecl(d)} style={{
+                    padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                    border: selectedDecls.has(d) ? "1px solid #c9b97a" : "1px solid #444",
+                    background: selectedDecls.has(d) ? "#2a2824" : "transparent",
+                    color: selectedDecls.has(d) ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {["I","II","III","IV","V"][d - 1]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ fontSize: "0.85rem", color: "#888" }}>
+                Numerus quaestiōnum:&nbsp;
+                <select value={totalQuestions} onChange={e => setTotalQuestions(Number(e.target.value))} style={{
+                  background: "#2a2824", color: "#e8e4d9", border: "1px solid #555",
+                  padding: "0.3rem 0.5rem", fontFamily: "inherit", fontSize: "0.85rem"
+                }}>
+                  {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Numerus:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {[
+                  { val: "sg", label: "Singulāris" },
+                  { val: "pl", label: "Plūrālis" },
+                  { val: "both", label: "Uterque" }
+                ].map(opt => (
+                  <button key={opt.val} onClick={() => setNumberMode(opt.val)} style={{
+                    padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                    border: numberMode === opt.val ? "1px solid #c9b97a" : "1px solid #444",
+                    background: numberMode === opt.val ? "#2a2824" : "transparent",
+                    color: numberMode === opt.val ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Modus:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button onClick={() => setEnglishMode(false)} style={{
+                  padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                  border: !englishMode ? "1px solid #c9b97a" : "1px solid #444",
+                  background: !englishMode ? "#2a2824" : "transparent",
+                  color: !englishMode ? "#c9b97a" : "#777",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                }}>
+                  Latīnē
+                </button>
+                <button onClick={() => setEnglishMode(true)} style={{
+                  padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                  border: englishMode ? "1px solid #c9b97a" : "1px solid #444",
+                  background: englishMode ? "#2a2824" : "transparent",
+                  color: englishMode ? "#c9b97a" : "#777",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                }}>
+                  Anglicē
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem", fontSize: "0.85rem", color: "#888" }}>
+              <span>Nōmina restantia: <strong style={{ color: totalAvailable > 0 ? "#c9b97a" : "#b56b6b" }}>{totalAvailable}</strong> / {totalInChapters}</span>
+            </div>
+
+            {totalAvailable === 0 && (
+              <p style={{ fontSize: "0.9rem", color: "#b56b6b", marginBottom: "1rem" }}>
+                Omnia nōmina iam vīsa sunt.
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <button onClick={startDrill} disabled={totalAvailable === 0} style={{
+                padding: "0.6rem 1.8rem", fontSize: "1rem",
+                background: totalAvailable === 0 ? "#333" : "#c9b97a",
+                color: totalAvailable === 0 ? "#666" : "#1a1a1e",
+                border: "none", cursor: totalAvailable === 0 ? "default" : "pointer",
+                fontFamily: "inherit", fontWeight: 600, letterSpacing: "0.06em"
+              }}>
+                Incipe
+              </button>
+              {totalAvailable === 0 && (
+                <button onClick={resetSession} style={{
+                  padding: "0.6rem 1.8rem", fontSize: "1rem",
+                  background: "#c9b97a", color: "#1a1a1e",
+                  border: "none", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 600, letterSpacing: "0.06em"
+                }}>
+                  Nova sessiō
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ====== RESULTS ======
+      if (done) {
+        const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        return (
+          <div>
+            <h1 style={{
+              fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", borderBottom: "1px solid #555",
+              paddingBottom: "0.75rem", marginBottom: "1.5rem", color: "#c9b97a"
+            }}>
+              Dēclīnātiōnēs Nōminum
+            </h1>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 400, color: "#c9b97a", marginBottom: "1rem" }}>Fīnis</h2>
+            <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.75rem" }}>{studentName}</p>
+            <p style={{ fontSize: "1.1rem", lineHeight: 1.8 }}>
+              Rēcta: <span style={{ color: "#7a9e7a" }}>{score.correct}</span> &nbsp;/&nbsp; Falsa: <span style={{ color: "#b56b6b" }}>{score.wrong}</span>
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", margin: "0.75rem 0" }}>
+              {(() => {
+                const pct = queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0;
+                const r = 34, c = 2 * Math.PI * r;
+                const col = pct >= 80 ? "#7a9e7a" : pct >= 50 ? "#c9b97a" : "#b56b6b";
+                return (
+                  <svg width="84" height="84" viewBox="0 0 84 84">
+                    <circle cx="42" cy="42" r={r} fill="none" stroke="#333" strokeWidth="6" />
+                    <circle cx="42" cy="42" r={r} fill="none" stroke={col} strokeWidth="6"
+                      strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)}
+                      strokeLinecap="round" transform="rotate(-90 42 42)" />
+                    <text x="42" y="48" textAnchor="middle" fontSize="17" fill="#e8e4d9" fontFamily="inherit">{pct}%</text>
+                  </svg>
+                );
+              })()}
+              <span style={{ fontSize: "0.85rem", color: "#666" }}>
+                {mins > 0 ? mins + " min " : ""}{secs} s
+              </span>
+            </div>
+
+            {missed.length > 0 && (
+              <div style={{ marginTop: "1.5rem" }}>
+                <h3 style={{
+                  fontSize: "1rem", fontWeight: 400, color: "#a08850",
+                  marginBottom: "0.75rem", borderBottom: "1px solid #3a3a3e", paddingBottom: "0.5rem"
+                }}>
+                  Nōmina corrigenda
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {missed.map((m, i) => (
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                      padding: "0.5rem 0.75rem", background: "#222226",
+                      border: "1px solid #3a3a3e", fontSize: "0.9rem"
+                    }}>
+                      <div>
+                        <span style={{ color: "#c9b97a" }}>{m.noun.nom}</span>
+                        <span style={{ color: "#666", marginLeft: "0.5rem" }}>
+                          ({CASE_LABELS[m.cs]} {NUM_LABELS[m.num]})
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: "#b56b6b", marginRight: "0.75rem" }}>{m.wrongAnswer}</span>
+                        <span style={{ color: "#7a9e7a" }}>{m.correctForm}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem" }}>
+              <button onClick={() => setStarted(false)} style={{
+                padding: "0.5rem 1.4rem", background: "#c9b97a", color: "#1a1a1e",
+                border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem", fontWeight: 600
+              }}>
+                Iterum
+              </button>
+              <button onClick={resetSession} style={{
+                padding: "0.5rem 1.4rem", background: "transparent", color: "#a08850",
+                border: "1px solid #a08850", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem"
+              }}>
+                Nova sessiō
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ====== DRILL ======
+      return (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+            <h1 style={{
+              fontSize: "1.4rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: "#c9b97a", margin: 0
+            }}>
+              Dēclīnātiōnēs Nōminum
+            </h1>
+            <span style={{ fontSize: "0.8rem", color: "#666" }}>{studentName}</span>
+          </div>
+          <div style={{ borderBottom: "1px solid #555", marginBottom: "1.25rem" }}></div>
+
+          <div className="progress-track"><div className="progress-fill" style={{ width: (queue.length ? (currentIdx / queue.length) * 100 : 0) + "%" }}></div></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "#777", marginBottom: "1.5rem" }}>
+            <span>
+              {currentIdx + 1} / {queue.length}
+              {currentIdx >= mainLength && <span style={{ color: "#a08850", marginLeft: "0.5rem" }}>(iterātiō)</span>}
+            </span>
+            <span style={{ color: "#7a9e7a" }}>{score.correct} recta</span>
+          </div>
+
+          <div style={{
+            background: "#222226", border: "1px solid #3a3a3e",
+            padding: "1.5rem", marginBottom: "1.25rem"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+              <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
+                Cap. {item.noun.ch}
+              </p>
+              <div style={{ textAlign: "right" }}>
+                {isPlOnly(item.noun) && (
+                  <div style={{ fontSize: "0.65rem", color: "#b56b6b", letterSpacing: "0.06em",
+                    padding: "0.15rem 0.5rem", border: "1px solid #b56b6b", display: "inline-block" }}>
+                    PLŪRĀLE TANTUM
+                  </div>
+                )}
+              </div>
+            </div>
+            {englishMode ? (
+              <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
+                <span style={{ color: "#c9b97a" }}>{getEnglishPrompt(item.noun, item.cs, item.num)}</span>
+                <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.noun.nom})</span>
+              </p>
+            ) : (
+              <div>
+                <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
+                  <span style={{ color: "#c9b97a" }}>{item.noun.nom}</span>
+                  <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.noun.mng})</span>
+                </p>
+                <p style={{ fontSize: "1.1rem", marginBottom: 0, marginTop: 0 }}>
+                  Cāsus: <strong style={{ color: "#ddd" }}>
+                    {CASE_LABELS[item.cs]} {NUM_LABELS[item.num]}
+                  </strong>
+                </p>
+              </div>
+            )}
+          </div>
+
+          {!feedback && (
+            <button onClick={() => setShowPrincipal(!showPrincipal)} style={{
+              ...linkBtn, fontSize: "0.8rem", marginBottom: "1rem", display: "block"
+            }}>
+              {showPrincipal ? "Cēla fōrmās prīncipālēs" : "Ostende fōrmās prīncipālēs"}
+            </button>
+          )}
+          {showPrincipal && !feedback && (
+            <p style={{ fontSize: "0.9rem", color: "#a08850", marginBottom: "1rem" }}>
+              <strong>{item.noun.nom}, {item.noun.gen} <em>{item.noun.g}</em></strong>
+            </p>
+          )}
+
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  if (feedback) nextQuestion(); else checkAnswer();
+                }
+              }}
+              readOnly={!!feedback}
+              placeholder="Scrībe fōrmam..."
+              style={{
+                flex: 1, padding: "0.6rem 0.75rem", fontSize: "1.1rem",
+                fontFamily: "inherit", background: "#2a2824", color: "#e8e4d9",
+                border: feedback === "correct" ? "1px solid #7a9e7a"
+                  : feedback === "wrong" ? "1px solid #b56b6b" : "1px solid #555",
+                outline: "none"
+              }}
+            />
+            {!feedback ? (
+              <button onClick={checkAnswer} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#c9b97a", color: "#1a1a1e", border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontWeight: 600
+              }}>
+                Proba
+              </button>
+            ) : (
+              <button onClick={nextQuestion} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#555", color: "#e8e4d9", border: "none",
+                cursor: "pointer", fontFamily: "inherit"
+              }}>
+                Proxima
+              </button>
+            )}
+          </div>
+
+          {feedback && (
+            <div className={feedback === "correct" ? "fb-ok" : "fb-no"} style={{
+              marginTop: "1rem", padding: "0.75rem 1rem",
+              background: feedback === "correct" ? "rgba(122,158,122,0.12)" : "rgba(181,107,107,0.12)",
+              border: feedback === "correct" ? "1px solid #4a6e4a" : "1px solid #7a4444"
+            }}>
+              {feedback === "correct" ? (
+                <p style={{ margin: 0, color: "#7a9e7a" }}>Rēctē. <strong>{correctAnswer}</strong></p>
+              ) : (
+                <p style={{ margin: 0, color: "#b56b6b" }}>
+                  Falsum. Rēspōnsum rēctum: <strong style={{ color: "#e8e4d9" }}>{correctAnswer}</strong>
+                </p>
+              )}
+            </div>
+          )}
+
+          <p style={{ fontSize: "0.7rem", color: "#555", marginTop: "1.5rem" }}>
+            Macrōna nōn requīruntur. Enter = proba / proxima.
+          </p>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

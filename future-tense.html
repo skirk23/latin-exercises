@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <title>Tempus Perfectum — Exercitia Latīna</title>
+  <title>Tempus Futūrum — Exercitia Latīna</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -999,117 +999,180 @@ const PP_MAP = {
   "cōnfīdere": "cōnfidō, cōnfīdere, cōnfīsus sum",
 };
 
-    var PERFECT_ENDINGS = {
-      "1sg": "\u012B", "2sg": "ist\u012B", "3sg": "it",
-      "1pl": "imus", "2pl": "istis", "3pl": "\u0113runt"
-    };
+    var PERSONS = ["1sg", "2sg", "3sg", "1pl", "2pl", "3pl"];
+    var PERS_IDX = { "1sg":0, "2sg":1, "3sg":2, "1pl":3, "2pl":4, "3pl":5 };
     var PERSON_LABELS = {
       "1sg": "ego", "2sg": "t\u016B", "3sg": "is/ea/id",
       "1pl": "n\u014Ds", "2pl": "v\u014Ds", "3pl": "e\u012B/eae/ea"
     };
-    var PERSONS = ["1sg", "2sg", "3sg", "1pl", "2pl", "3pl"];
     var ALL_CHAPTERS = [...new Set(VERBS.map(function(v){return v.ch}))].sort(function(a,b){return a-b});
 
-    // --- ENGLISH MODE HELPERS ---
-    var EN_PRONOUNS = {
-      "1sg": "I", "2sg": "you", "1pl": "we", "2pl": "you (pl.)", "3pl": "they"
+    // ===== FUTURE INDICATIVE ENGINE =====
+    // Active future endings by conjugation class (attached to the present stem)
+    var TENSE_ACT = {
+      "1":   ["ābō","ābis","ābit","ābimus","ābitis","ābunt"],
+      "2":   ["ēbō","ēbis","ēbit","ēbimus","ēbitis","ēbunt"],
+      "3":   ["am","ēs","et","ēmus","ētis","ent"],
+      "3io": ["iam","iēs","iet","iēmus","iētis","ient"],
+      "4":   ["iam","iēs","iet","iēmus","iētis","ient"]
     };
-    var EN_PRONOUNS_3SG = { m: "he", f: "she", n: "it" };
-    var EN_WAS_WERE = {
-      "1sg": "was", "2sg": "were", "3sg": "was",
-      "1pl": "were", "2pl": "were", "3pl": "were"
+    // Passive / deponent future endings by conjugation class
+    var TENSE_PASS = {
+      "1":   ["ābor","āberis","ābitur","ābimur","ābiminī","ābuntur"],
+      "2":   ["ēbor","ēberis","ēbitur","ēbimur","ēbiminī","ēbuntur"],
+      "3":   ["ar","ēris","ētur","ēmur","ēminī","entur"],
+      "3io": ["iar","iēris","iētur","iēmur","iēminī","ientur"],
+      "4":   ["iar","iēris","iētur","iēmur","iēminī","ientur"]
     };
-    function getEnglishPronoun(person, gender) {
-      if (person === "3sg") return gender ? EN_PRONOUNS_3SG[gender] || "he/she/it" : "he/she/it";
-      if (person === "3pl" && gender === "n") return "they (n.)";
-      return EN_PRONOUNS[person];
-    }
-    function getEnglishPrompt(verb, person, voice, gender) {
-      var pronoun = getEnglishPronoun(person, gender);
-      // Deponent/semi-deponent: Latin form is passive, but English meaning is active
-      if (verb.dep) {
-        if (verb.meaning === "to be") {
-          return pronoun + " " + EN_WAS_WERE[person];
-        }
-        return pronoun + " " + verb.past;
+
+    // Irregular verbs: explicit future forms (order matches PERSONS).
+    // pass omitted = no personal passive offered. dep:true = forms are active in
+    // shape but the verb is routed as a deponent (fierī).
+    var IRREG = {
+      "esse":      { act:["erō","eris","erit","erimus","eritis","erunt"] },
+      "adesse":    { act:["aderō","aderis","aderit","aderimus","aderitis","aderunt"] },
+      "abesse":    { act:["aberō","aberis","aberit","aberimus","aberitis","aberunt"] },
+      "interesse": { act:["intererō","intereris","intererit","intererimus","intereritis","intererunt"] },
+      "superesse": { act:["supererō","supereris","supererit","supererimus","supereritis","supererunt"] },
+      "deesse":    { act:["deerō","deeris","deerit","deerimus","deeritis","deerunt"] },
+      "velle":     { act:["volam","volēs","volet","volēmus","volētis","volent"] },
+      "īre":       { act:["ībō","ībis","ībit","ībimus","ībitis","ībunt"] },
+      "exīre":     { act:["exībō","exībis","exībit","exībimus","exībitis","exībunt"] },
+      "redīre":    { act:["redībō","redībis","redībit","redībimus","redībitis","redībunt"] },
+      "abīre":     { act:["abībō","abībis","abībit","abībimus","abībitis","abībunt"] },
+      "subīre":    { act:["subībō","subībis","subībit","subībimus","subībitis","subībunt"] },
+      "perīre":    { act:["perībō","perībis","perībit","perībimus","perībitis","perībunt"] },
+      "adīre":     { act:["adībō","adībis","adībit","adībimus","adībitis","adībunt"],
+                     pass:["adībor","adīberis","adībitur","adībimur","adībiminī","adībuntur"] },
+      "trānsīre":  { act:["trānsībō","trānsībis","trānsībit","trānsībimus","trānsībitis","trānsībunt"],
+                     pass:["trānsībor","trānsīberis","trānsībitur","trānsībimur","trānsībiminī","trānsībuntur"] },
+      "ferre":     { act:["feram","ferēs","feret","ferēmus","ferētis","ferent"],
+                     pass:["ferar","ferēris","ferētur","ferēmur","ferēminī","ferentur"] },
+      "afferre":   { act:["afferam","afferēs","afferet","afferēmus","afferētis","afferent"],
+                     pass:["afferar","afferēris","afferētur","afferēmur","afferēminī","afferentur"] },
+      "dare":      { act:["dabō","dabis","dabit","dabimus","dabitis","dabunt"],
+                     pass:["dabor","daberis","dabitur","dabimur","dabiminī","dabuntur"] },
+      "fierī":     { act:["fīam","fīēs","fīet","fīēmus","fīētis","fīent"], dep:true }
+    };
+
+    // First principal part (1sg present) token for a verb, from PP_MAP.
+    function firstPart(inf) { return (PP_MAP[inf] || "").split(/[\s,]+/)[0]; }
+
+    // Determine conjugation class + present stem for a regular verb.
+    // v.pdep marks a TRUE present-deponent (passive form in the present system).
+    function classOf(v) {
+      var inf = v.inf;
+      var tok = firstPart(inf);
+      if (v.pdep) {
+        if (/ārī$/.test(inf)) return { cls:"1", base: inf.slice(0,-3) };
+        if (/ērī$/.test(inf)) return { cls:"2", base: inf.slice(0,-3) };
+        if (/īrī$/.test(inf)) return { cls:"4", base: inf.slice(0,-3) };
+        // bare -ī : 3rd-conjugation deponent
+        return { cls: /ior$/.test(tok) ? "3io" : "3", base: inf.slice(0,-1) };
       }
-      if (voice === "passive") {
-        // pronoun + was/were + past participle
-        var aux = EN_WAS_WERE[person];
-        return pronoun + " " + aux + " " + verb.pp;
-      } else {
-        // Special case for "to be": use was/were
-        if (verb.meaning === "to be") {
-          return pronoun + " " + EN_WAS_WERE[person];
-        }
-        return pronoun + " " + verb.past;
-      }
-    }
-
-    // --- PASSIVE VOICE DATA ---
-    var ESSE_PRESENT = {
-      "1sg": "sum", "2sg": "es", "3sg": "est",
-      "1pl": "sumus", "2pl": "estis", "3pl": "sunt"
-    };
-    var GENDERS = ["m", "f", "n"];
-    var PPP_ENDINGS = {
-      "1sg": { m: "us", f: "a", n: "um" },
-      "2sg": { m: "us", f: "a", n: "um" },
-      "3sg": { m: "us", f: "a", n: "um" },
-      "1pl": { m: "\u012B", f: "ae", n: "a" },
-      "2pl": { m: "\u012B", f: "ae", n: "a" },
-      "3pl": { m: "\u012B", f: "ae", n: "a" }
-    };
-    var GENDER_SYMBOLS = { m: "m.", f: "f.", n: "n." };
-    function PERSON_LABEL_WITH_GENDER(person, gender) {
-      var base = {
-        "1sg": "ego", "2sg": "t\u016B", "3sg": { m: "is", f: "ea", n: "id" },
-        "1pl": "n\u014Ds", "2pl": "v\u014Ds", "3pl": { m: "e\u012B", f: "eae", n: "ea" }
-      };
-      var lbl = base[person];
-      var pronoun = typeof lbl === "object" ? lbl[gender] : lbl;
-      return pronoun + " (" + GENDER_SYMBOLS[gender] + ")";
-    }
-
-    // Extract PPP stem from PP_MAP for a given verb infinitive
-    // Returns null if no PPP can be formed
-    function getPPPStem(inf) {
-      var entry = PP_MAP[inf];
-      if (!entry) return null;
-      var verb = VERBS.find(function(v){ return v.inf === inf; });
-      var parts = entry.split(",").map(function(s){ return s.trim(); });
-
-      // Deponent/semi-deponent: look for part containing "sum"
-      if (verb && verb.dep) {
-        for (var i = parts.length - 1; i >= 0; i--) {
-          if (/\bsum$/.test(parts[i])) {
-            var ppp = parts[i].replace(/\s+sum$/, "").trim();
-            if (ppp.endsWith("us")) return ppp.slice(0, -2);
-          }
-        }
-        return null;
-      }
-
-      // Regular verb: 4th principal part is at index 3
-      if (parts.length < 4) return null;
-      var fourth = parts[3];
-      // Clean trailing English words
-      fourth = fourth.replace(/\s+[a-z].*$/i, "").trim();
-      // Clean trailing parenthetical
-      fourth = fourth.replace(/\s*\(.*$/, "").trim();
-      // Skip futūrus-type entries (esse, adesse, etc.)
-      if (fourth.endsWith("ūrus") || fourth.endsWith("urus")) return null;
-      if (fourth.endsWith("um")) return fourth.slice(0, -2);
-      if (fourth.endsWith("us")) return fourth.slice(0, -2);
+      if (/āre$/.test(inf)) return { cls:"1", base: inf.slice(0,-3) };
+      if (/ēre$/.test(inf)) return { cls:"2", base: inf.slice(0,-3) };
+      if (/īre$/.test(inf)) return { cls:"4", base: inf.slice(0,-3) };
+      if (/ere$/.test(inf)) return { cls: /iō$/.test(tok) ? "3io" : "3", base: inf.slice(0,-3) };
       return null;
     }
 
-    // Build a cached PPP stem map
-    var PPP_STEM_MAP = {};
+    function getCorrectForm(verb, person) {
+      var i = PERS_IDX[person];
+      if (IRREG[verb.inf]) return IRREG[verb.inf].act[i];
+      var c = classOf(verb);
+      if (!c) return null;
+      return c.base + TENSE_ACT[c.cls][i];
+    }
+    function getPassiveForm(verb, person) {
+      var i = PERS_IDX[person];
+      var ir = IRREG[verb.inf];
+      if (ir) {
+        if (ir.dep) return ir.act[i];      // fierī: active-shaped forms
+        return ir.pass ? ir.pass[i] : null;
+      }
+      var c = classOf(verb);
+      if (!c) return null;
+      return c.base + TENSE_PASS[c.cls][i];
+    }
+
+    // ===== ENGLISH (future-tense clues) =====
+    var EN_PRONOUNS = { "1sg":"I", "2sg":"you", "3sg":"he/she/it", "1pl":"we", "2pl":"you (pl.)", "3pl":"they" };
+    function enBase(meaning) { return meaning.split(",")[0].trim(); }
+    function getEnglishPrompt(verb, person, voice) {
+      var pron = EN_PRONOUNS[person];
+      var base = enBase(verb.meaning);
+      if (verb.meaning === "to be") return pron + " will be";
+      // "not know" style
+      if (/^not\b/.test(base)) {
+        return pron + " will not " + base.replace(/^not\s*/, "");
+      }
+      // passive (non-deponent): will be + past participle
+      if (voice === "passive" && !verb.pdep) {
+        return pron + " will be " + verb.pp;
+      }
+      // active / deponent (and "be X" statives)
+      return pron + " will " + base;
+    }
+
+    // Mark TRUE present-deponents (passive form in the present): their 1st
+    // principal part ends in -or (cōnor, vereor, queror, partior, for ...).
+    // Semi-deponents (audeō, gaudeō, soleō, fīdō, cōnfīdō) are ACTIVE in the
+    // present system, so they are intentionally NOT flagged here.
     VERBS.forEach(function(v) {
-      var stem = getPPPStem(v.inf);
-      if (stem) PPP_STEM_MAP[v.inf] = stem;
+      v.pdep = /or$/.test(firstPart(v.inf)) || v.inf === "fierī";
     });
+
+    // Transitive verbs (govern a direct accusative object), so a personal
+    // present passive is grammatical. Whitelist: any verb NOT listed here is
+    // treated as intransitive and excluded from the passive drill. Dative- and
+    // ablative-governing verbs (pārēre, imperāre, crēdere, nocēre, carēre, ...)
+    // are intentionally omitted, as are motion/state verbs.
+    var TRANSITIVE = new Set([
+      "vocāre","vidēre","verberāre","pulsāre","interrogāre","cantāre","audīre",
+      "sūmere","salūtāre","pōnere","numerāre","habēre","accūsāre",
+      "dēlectāre","carpere","agere",
+      "vehere","timēre","portāre","intrāre",
+      "vertere","tergēre","tenēre","exspectāre","dare","claudere","aperīre","adīre",
+      "vēndere","ostendere","ōrnāre","mōnstrāre","emere","aspicere","accipere",
+      "reperīre","relinquere","quaerere","petere","impōnere","dūcere","dēclīnāre","bibere",
+      "sustinēre","parere","occultāre","movēre","facere","capere","canere","ascendere",
+      "tangere","spectāre","sentīre","sānāre","putāre","iubēre","dīcere","dētergēre","arcessere","appōnere",
+      "oppugnāre","metuere","incolere","iacere","ferre","expugnāre","dīvidere","dēfendere",
+      "operīre","nōmināre","incipere","illūstrāre",
+      "vestīre","poscere","mergere","lavāre","induere","gerere","excitāre","afferre",
+      "reddere","recitāre","pūnīre",
+      "turbāre","servāre","invocāre","implēre","iactāre","haurīre","gubernāre","cōnscendere","cernere","appellāre",
+      "tollere","scīre","reprehendere","repōnere","prōmere","laudāre","interpellāre","docēre","discere","dēmōnstrāre","computāre","cōgitāre",
+      "significāre","signāre","scrībere","premere","legere","iungere","intellegere","imprimere","exaudīre","efficere","dictāre","dēlēre","corrigere","comparāre","animadvertere","addere","coniungere",
+      "remittere","possidēre","mittere","minuere","augēre",
+      "postulāre","dīligere","dēbēre","cūrāre","alere","advehere",
+      "vincere","nārrāre","mūtāre","fallere","excūsāre","dubitāre","cōnspicere","cognōscere",
+      "vincīre","terrēre","solvere","sinere","scindere","rumpere","rogitāre","retinēre","removēre","prehendere","pellere","mordēre","monēre","dērīdēre","cūstōdīre","admittere",
+      "trādere","prōmittere","negāre","merēre","īnscrībere","inclūdere","dīmittere","continēre","āvertere",
+      "nōscere","frangere","cupere","convertere",
+      "vorāre","trahere","regere","occīdere","necāre","interficere","dēserere","cōnstituere",
+      "ūrere","revocāre","mollīre","levāre","iuvāre","invenīre","fīgere","excōgitāre","dēspicere","cōnsūmere","cōnficere","suspicere",
+      "serere","rigāre","rapere","prōicere","prohibēre","pāscere","ōrāre","neglegere","metere","invehere","exīstimāre","colere","cingere","cēnsēre","arāre",
+      "vītāre","suscitāre","spērāre","salvāre","rogāre","memorāre","extendere","ēvolvere","ēicere","disiungere","apprehendere","adōrāre",
+      "surripere","secāre","redūcere","recognōscere","perturbāre","permovēre","fīnīre","expōnere","ēripere","dōnāre","dētrahere","dēterrēre","āmittere","allicere","afficere","adicere","abstinēre","abicere",
+      "vīsere","sternere","recipere","pōtāre","parāre","nūntiāre","miscēre","līberāre","gustāre","fundere","exōrnāre","exhaurīre","ēligere","coquere","contrahere","complēre","aspergere","apportāre",
+      "vetāre","statuere","retrahere","optāre","ēducāre","cruciāre","abdūcere",
+      "submergere","redimere","flectere","ēdūcere","contemnere","armāre","adiuvāre",
+      "vulnerāre","trānsīre","praestāre","mūnīre","īnstruere","fatīgāre","effundere","dēsīderāre","cōpulāre","convocāre","commemorāre","cōgere","caedere","adiungere",
+      "requīrere","lūgēre","laedere","implicāre","excruciāre","ēlīdere","dēvorāre","conturbāre","affirmāre","accendere",
+      "ōrdināre","explānāre","dēmere","adnectere"
+    ]);
+
+    // Which verbs may be drilled in the passive?
+    //  - true present-deponents: always (their present forms are passive-only)
+    //  - semi-deponents (active in the present): never
+    //  - everyone else: only if transitive
+    function canPassive(v) {
+      if (v.pdep) return true;
+      if (v.dep) return false;
+      return TRANSITIVE.has(v.inf);
+    }
   </script>
 
   <script>
@@ -1132,18 +1195,6 @@ const PP_MAP = {
   <script type="text/babel">
     const { useState, useCallback, useRef, useEffect } = React;
 
-    function getStem(perf1) {
-      return perf1.endsWith("\u012B") ? perf1.slice(0, -1) : perf1;
-    }
-    function getCorrectForm(verb, person) {
-      return getStem(verb.perf1) + PERFECT_ENDINGS[person];
-    }
-    function getPassiveForm(verb, person, gender) {
-      var stem = PPP_STEM_MAP[verb.inf];
-      if (!stem) return null;
-      var ending = PPP_ENDINGS[person][gender];
-      return stem + ending + " " + ESSE_PRESENT[person];
-    }
     function normalize(s) {
       return s.trim().toLowerCase()
         .replace(/\u0101/g,"a").replace(/\u0113/g,"e").replace(/\u012B/g,"i")
@@ -1201,8 +1252,8 @@ const PP_MAP = {
 
       const verbPool = VERBS.filter(v => {
         if (!selectedChapters.has(v.ch)) return false;
-        if (voiceMode === "active") return !v.dep;
-        if (voiceMode === "passive") return v.dep || PPP_STEM_MAP[v.inf];
+        if (voiceMode === "active") return !v.pdep;
+        if (voiceMode === "passive") return canPassive(v);
         // "both": include all that can appear in either mode
         return true;
       });
@@ -1217,8 +1268,8 @@ const PP_MAP = {
         const filtered = VERBS.filter(v => {
           if (!selectedChapters.has(v.ch)) return false;
           if (seenVerbs.has(v.inf)) return false;
-          if (voiceMode === "active") return !v.dep;
-          if (voiceMode === "passive") return v.dep || PPP_STEM_MAP[v.inf];
+          if (voiceMode === "active") return !v.pdep;
+          if (voiceMode === "passive") return canPassive(v);
           return true; // "both"
         });
         if (filtered.length === 0) return;
@@ -1228,18 +1279,17 @@ const PP_MAP = {
           const person = PERSONS[Math.floor(Math.random() * PERSONS.length)];
           // Determine voice for this item
           let voice;
-          if (verb.dep) {
-            voice = "passive"; // deponents/semi-dep always passive form
+          if (verb.pdep) {
+            voice = "passive"; // true deponents are passive in form
           } else if (voiceMode === "active") {
             voice = "active";
           } else if (voiceMode === "passive") {
             voice = "passive";
           } else {
-            // "both" — pick randomly, but only passive if PPP exists
-            voice = (PPP_STEM_MAP[verb.inf] && Math.random() < 0.5) ? "passive" : "active";
+            // "both" — pick randomly, but only passive if the verb allows it
+            voice = (canPassive(verb) && Math.random() < 0.5) ? "passive" : "active";
           }
-          const gender = voice === "passive" ? GENDERS[Math.floor(Math.random() * GENDERS.length)] : null;
-          return { verb, person, voice, gender };
+          return { verb, person, voice };
         });
         setSeenVerbs(prev => {
           const next = new Set(prev);
@@ -1273,7 +1323,7 @@ const PP_MAP = {
         if (!input.trim()) return;
         const item = queue[currentIdx];
         const correct = item.voice === "passive"
-          ? getPassiveForm(item.verb, item.person, item.gender)
+          ? getPassiveForm(item.verb, item.person)
           : getCorrectForm(item.verb, item.person);
         if (normalize(input) === normalize(correct)) {
           setFeedback("correct");
@@ -1284,10 +1334,10 @@ const PP_MAP = {
           setScore(s => ({ ...s, wrong: s.wrong + 1 }));
           setCorrectAnswer(correct);
           setMissed(prev => [...prev, {
-            verb: item.verb, person: item.person, voice: item.voice, gender: item.gender,
+            verb: item.verb, person: item.person, voice: item.voice,
             wrongAnswer: input.trim(), correctForm: correct
           }]);
-          setQueue(prev => [...prev, { verb: item.verb, person: item.person, voice: item.voice, gender: item.gender, isRetry: true }]);
+          setQueue(prev => [...prev, { verb: item.verb, person: item.person, voice: item.voice, isRetry: true }]);
         }
       };
 
@@ -1319,7 +1369,7 @@ const PP_MAP = {
           const chapList = [...selectedChapters].sort((a,b) => a - b).join(", ");
           postToSheets({
             student: studentName.trim(),
-            exercise: "Tempus Perfectum",
+            exercise: "Tempus Futūrum",
             voiceMode: voiceMode,
             clueMode: englishMode ? "English" : "Latin",
             chapters: chapList,
@@ -1331,7 +1381,6 @@ const PP_MAP = {
               verb: m.verb.inf,
               person: m.person,
               voice: m.voice,
-              gender: m.gender,
               wrong: m.wrongAnswer,
               correct: m.correctForm
             }))
@@ -1357,7 +1406,7 @@ const PP_MAP = {
                 textTransform: "uppercase", borderBottom: "none",
                 color: "#c9b97a", margin: 0
               }}>
-                Tempus Perfectum
+                Tempus Futūrum
               </h1>
               <div style={{ fontSize: "0.8rem", color: "#888" }}>
                 <span style={{ marginRight: "0.75rem" }}>{studentName}</span>
@@ -1494,7 +1543,7 @@ const PP_MAP = {
               textTransform: "uppercase", borderBottom: "1px solid #555",
               paddingBottom: "0.75rem", marginBottom: "1.5rem", color: "#c9b97a"
             }}>
-              Tempus Perfectum
+              Tempus Futūrum
             </h1>
             <h2 style={{ fontSize: "1.2rem", fontWeight: 400, color: "#c9b97a", marginBottom: "1rem" }}>Fīnis</h2>
             <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.75rem" }}>{studentName}</p>
@@ -1539,9 +1588,7 @@ const PP_MAP = {
                       <div>
                         <span style={{ color: "#c9b97a" }}>{m.verb.inf}</span>
                         <span style={{ color: "#666", marginLeft: "0.5rem" }}>
-                          ({m.voice === "passive"
-                            ? PERSON_LABEL_WITH_GENDER(m.person, m.gender)
-                            : PERSON_LABELS[m.person]})
+                          ({PERSON_LABELS[m.person]})
                         </span>
                         {m.voice === "passive" && <span style={{ color: "#9a9ace", fontSize: "0.7rem", marginLeft: "0.4rem" }}>pass.</span>}
                       </div>
@@ -1581,7 +1628,7 @@ const PP_MAP = {
               fontSize: "1.4rem", fontWeight: 400, letterSpacing: "0.12em",
               textTransform: "uppercase", color: "#c9b97a", margin: 0
             }}>
-              Tempus Perfectum
+              Tempus Futūrum
             </h1>
             <span style={{ fontSize: "0.8rem", color: "#666" }}>{studentName}</span>
           </div>
@@ -1613,7 +1660,7 @@ const PP_MAP = {
                 }}>
                   {item.voice === "passive" ? "PASSĪVUM" : "ĀCTĪVUM"}
                 </span>
-                {item.verb.dep && (
+                {item.verb.pdep && (
                   <div style={{ fontSize: "0.65rem", color: "#b56b6b", marginTop: "0.3rem", letterSpacing: "0.06em",
                     padding: "0.15rem 0.5rem", border: "1px solid #b56b6b", display: "inline-block" }}>
                     DĒPŌNENS
@@ -1623,22 +1670,20 @@ const PP_MAP = {
             </div>
             {englishMode ? (
               <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
-                <span style={{ color: "#c9b97a" }}>{getEnglishPrompt(item.verb, item.person, item.voice, item.gender)}</span>
+                <span style={{ color: "#c9b97a" }}>{getEnglishPrompt(item.verb, item.person, item.voice)}</span>
                 <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.verb.inf})</span>
-                {item.verb.dep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
+                {item.verb.pdep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
               </p>
             ) : (
               <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
                 <span style={{ color: "#c9b97a" }}>{item.verb.inf}</span>
                 <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.verb.meaning})</span>
-                {item.verb.dep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
+                {item.verb.pdep && <span style={{ fontSize: "0.7rem", color: "#777", marginLeft: "0.5rem", fontStyle: "italic" }}>dēp.</span>}
               </p>
             )}
             <p style={{ fontSize: "1.1rem", marginBottom: 0, marginTop: 0 }}>
               Persōna: <strong style={{ color: "#ddd" }}>
-                {item.voice === "passive"
-                  ? PERSON_LABEL_WITH_GENDER(item.person, item.gender)
-                  : PERSON_LABELS[item.person]}
+                {PERSON_LABELS[item.person]}
               </strong>
               <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: "0.5rem" }}>
                 ({item.person.replace("sg", " sing.").replace("pl", " plūr.")})

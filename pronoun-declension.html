@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a1a1e'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23c9b97a' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <title>Prōnōmina — Exercitia Latīna</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #1a1a1e;
+      color: #e8e4d9;
+      font-family: 'Cardo', 'Palatino Linotype', Palatino, Georgia, serif;
+      padding: 2rem;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    a.back-link {
+      font-size: 0.7rem; color: #777; text-decoration: none;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      display: inline-block; margin-bottom: 1rem;
+    }
+    a.back-link:hover { color: #c9b97a; }
+    input:focus { border-color: #c9b97a !important; box-shadow: 0 0 0 2px rgba(201,185,122,0.25); }
+    .progress-track { height: 3px; background: #333; margin-bottom: 1.25rem; }
+    .progress-fill { height: 100%; background: #c9b97a; transition: width 0.3s ease; }
+    @keyframes fbPulse { 0% { background: rgba(122,158,122,0.4); } 100% { background: rgba(122,158,122,0.12); } }
+    @keyframes fbShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .fb-ok { animation: fbPulse 0.5s ease-out; }
+    .fb-no { animation: fbShake 0.3s ease-in-out; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a class="back-link" href="index.html">&larr; Exercitia Latīna</a>
+    <div id="root"></div>
+  </div>
+
+  <script>
+    // ========================================================
+    // CONFIGURATION — set your Google Apps Script webhook URL
+    // ========================================================
+    var SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzyIbIcdS266C01qkfABYpZjac4YA8yKjtw_EoiDBp3LevdKnouOiniigaJBkMBw1A3rQ/exec";
+    // Leave empty to disable reporting.
+  </script>
+
+  <script>
+    // ========================================================
+    // PRONOUN DATA
+    // forms[gender][number] = [nom, gen, dat, acc, abl]
+    // Each cell is an array: first form canonical, the rest accepted.
+    // ========================================================
+    var PRONOUNS = [
+      { id: "is", label: "is, ea, id", mng: "he, she, it", forms: {
+        m: { sg: [["is"],["eius"],["eī"],["eum"],["eō"]],
+             pl: [["eī","iī"],["eōrum"],["eīs","iīs"],["eōs"],["eīs","iīs"]] },
+        f: { sg: [["ea"],["eius"],["eī"],["eam"],["eā"]],
+             pl: [["eae"],["eārum"],["eīs","iīs"],["eās"],["eīs","iīs"]] },
+        n: { sg: [["id"],["eius"],["eī"],["id"],["eō"]],
+             pl: [["ea"],["eōrum"],["eīs","iīs"],["ea"],["eīs","iīs"]] }
+      }},
+      { id: "hic", label: "hic, haec, hoc", mng: "this", forms: {
+        m: { sg: [["hic"],["huius"],["huic"],["hunc"],["hōc"]],
+             pl: [["hī"],["hōrum"],["hīs"],["hōs"],["hīs"]] },
+        f: { sg: [["haec"],["huius"],["huic"],["hanc"],["hāc"]],
+             pl: [["hae"],["hārum"],["hīs"],["hās"],["hīs"]] },
+        n: { sg: [["hoc"],["huius"],["huic"],["hoc"],["hōc"]],
+             pl: [["haec"],["hōrum"],["hīs"],["haec"],["hīs"]] }
+      }},
+      { id: "ille", label: "ille, illa, illud", mng: "that", forms: {
+        m: { sg: [["ille"],["illīus"],["illī"],["illum"],["illō"]],
+             pl: [["illī"],["illōrum"],["illīs"],["illōs"],["illīs"]] },
+        f: { sg: [["illa"],["illīus"],["illī"],["illam"],["illā"]],
+             pl: [["illae"],["illārum"],["illīs"],["illās"],["illīs"]] },
+        n: { sg: [["illud"],["illīus"],["illī"],["illud"],["illō"]],
+             pl: [["illa"],["illōrum"],["illīs"],["illa"],["illīs"]] }
+      }},
+      { id: "īdem", label: "īdem, eadem, idem", mng: "the same", forms: {
+        m: { sg: [["īdem"],["eiusdem"],["eīdem"],["eundem"],["eōdem"]],
+             pl: [["eīdem","īdem","iīdem"],["eōrundem"],["eīsdem","īsdem","iīsdem"],["eōsdem"],["eīsdem","īsdem","iīsdem"]] },
+        f: { sg: [["eadem"],["eiusdem"],["eīdem"],["eandem"],["eādem"]],
+             pl: [["eaedem"],["eārundem"],["eīsdem","īsdem","iīsdem"],["eāsdem"],["eīsdem","īsdem","iīsdem"]] },
+        n: { sg: [["idem"],["eiusdem"],["eīdem"],["idem"],["eōdem"]],
+             pl: [["eadem"],["eōrundem"],["eīsdem","īsdem","iīsdem"],["eadem"],["eīsdem","īsdem","iīsdem"]] }
+      }},
+      { id: "quī", label: "quī, quae, quod", mng: "who, which", forms: {
+        m: { sg: [["quī"],["cuius"],["cui"],["quem"],["quō"]],
+             pl: [["quī"],["quōrum"],["quibus"],["quōs"],["quibus"]] },
+        f: { sg: [["quae"],["cuius"],["cui"],["quam"],["quā"]],
+             pl: [["quae"],["quārum"],["quibus"],["quās"],["quibus"]] },
+        n: { sg: [["quod"],["cuius"],["cui"],["quod"],["quō"]],
+             pl: [["quae"],["quōrum"],["quibus"],["quae"],["quibus"]] }
+      }}
+    ];
+
+    var CASES = ["nom","gen","dat","acc","abl"];
+    var CASE_IDX = { nom:0, gen:1, dat:2, acc:3, abl:4 };
+    var NUMS = ["sg","pl"];
+    var GENDERS = ["m","f","n"];
+    var CASE_LABELS = { nom:"nōminātīvus", gen:"genitīvus", dat:"datīvus", acc:"accūsātīvus", abl:"ablātīvus" };
+    var NUM_LABELS = { sg:"singulāris", pl:"plūrālis" };
+    var GEN_LABELS = { m:"masculīnum", f:"fēminīnum", n:"neutrum" };
+
+    function stripM(s) {
+      return s.replace(/ā/g,"a").replace(/ē/g,"e").replace(/ī/g,"i")
+              .replace(/ō/g,"o").replace(/ū/g,"u").replace(/ȳ/g,"y")
+              .replace(/Ā/g,"A").replace(/Ē/g,"E").replace(/Ī/g,"I")
+              .replace(/Ō/g,"O").replace(/Ū/g,"U");
+    }
+
+    function getForms(p, g, num, cs) {
+      return p.forms[g][num][CASE_IDX[cs]];
+    }
+
+    // All drillable cells for a pronoun. In Latin mode nom. sg. is skipped
+    // (the form appears in the lemma itself).
+    function cellsOf(p, numberMode, latinMode) {
+      var cells = [];
+      GENDERS.forEach(function(g) {
+        NUMS.forEach(function(num) {
+          if (numberMode === "sg" && num !== "sg") return;
+          if (numberMode === "pl" && num !== "pl") return;
+          CASES.forEach(function(cs) {
+            if (latinMode && cs === "nom" && num === "sg") return;
+            cells.push({ g: g, num: num, cs: cs });
+          });
+        });
+      });
+      return cells;
+    }
+    function cellKey(p, c) { return p.id + "|" + c.g + "|" + c.num + "|" + c.cs; }
+
+    // ===== ENGLISH CLUES =====
+    // Inflected English phrases with minimal gender/number tags:
+    //   "of him" -> eius; "these (f., object)" -> hās; "whose (m. sg.)" -> cuius
+    function getEnglishPrompt(p, g, num, cs) {
+      var subj, obj, genPhrase = null, tags = [];
+      if (p.id === "is") {
+        if (num === "sg") { subj = {m:"he",f:"she",n:"it"}[g]; obj = {m:"him",f:"her",n:"it"}[g]; }
+        else { subj = "they"; obj = "them"; tags = [g + "."]; }
+      } else if (p.id === "hic") {
+        subj = obj = (num === "sg" ? "this" : "these"); tags = [g + "."];
+      } else if (p.id === "ille") {
+        subj = obj = (num === "sg" ? "that" : "those"); tags = [g + "."];
+      } else if (p.id === "īdem") {
+        subj = obj = "the same"; tags = [g + ". " + (num === "sg" ? "sg." : "pl.")];
+      } else { // quī
+        subj = (g === "n" ? "which" : "who");
+        obj = (g === "n" ? "which" : "whom");
+        genPhrase = (g === "n" ? "of which" : "whose");
+        tags = [g + ". " + (num === "sg" ? "sg." : "pl.")];
+      }
+      var tagStr = tags.length ? " (" + tags.join(", ") + ")" : "";
+      if (cs === "nom") return subj + " (" + tags.concat(["subject"]).join(", ") + ")";
+      if (cs === "acc") return obj + " (" + tags.concat(["object"]).join(", ") + ")";
+      if (cs === "gen") return (genPhrase ? genPhrase : "of " + obj) + tagStr;
+      if (cs === "dat") return "for or to " + obj + tagStr;
+      return "from, with, in, or by " + obj + tagStr;
+    }
+  </script>
+
+  <script>
+    // Student name: URL parameter (works from file://) with localStorage fallback.
+    var STUDENT = (function () {
+      var p = null;
+      try { p = new URLSearchParams(window.location.search).get("n"); } catch (e) {}
+      if (p) {
+        try { localStorage.setItem("exercitiaStudent", p); } catch (e) {}
+        return p;
+      }
+      try { return localStorage.getItem("exercitiaStudent") || ""; } catch (e) { return ""; }
+    })();
+    (function () {
+      var back = document.querySelector("a.back-link");
+      if (back && STUDENT) back.href = "index.html?n=" + encodeURIComponent(STUDENT);
+    })();
+  </script>
+
+  <script type="text/babel">
+    const { useState, useCallback, useRef, useEffect } = React;
+
+    function normalize(s) {
+      return stripM(s.trim().toLowerCase());
+    }
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function postToSheets(payload) {
+      if (!SHEETS_WEBHOOK_URL) return;
+      try {
+        fetch(SHEETS_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) { /* silent fail */ }
+    }
+
+    const linkBtn = {
+      background: "none", border: "none", color: "#a08850", cursor: "pointer",
+      fontFamily: "'Cardo', 'Palatino Linotype', Palatino, Georgia, serif",
+      fontSize: "0.85rem", padding: 0, textDecoration: "underline", textUnderlineOffset: "3px"
+    };
+
+    function App() {
+      const studentName = STUDENT;
+
+      const [selectedPronouns, setSelectedPronouns] = useState(new Set(PRONOUNS.map(p => p.id)));
+      const [numberMode, setNumberMode] = useState("both"); // "sg", "pl", "both"
+      const [englishMode, setEnglishMode] = useState(false);
+      const [started, setStarted] = useState(false);
+      const [queue, setQueue] = useState([]);
+      const [currentIdx, setCurrentIdx] = useState(0);
+      const [input, setInput] = useState("");
+      const [feedback, setFeedback] = useState(null);
+      const [correctAnswer, setCorrectAnswer] = useState("");
+      const [score, setScore] = useState({ correct: 0, wrong: 0 });
+      const [showPrincipal, setShowPrincipal] = useState(false);
+      const [totalQuestions, setTotalQuestions] = useState(20);
+      const [missed, setMissed] = useState([]);
+      const [mainLength, setMainLength] = useState(0);
+      const [seenCells, setSeenCells] = useState(new Set());
+      const [startTime, setStartTime] = useState(null);
+      const [reported, setReported] = useState(false);
+      const inputRef = useRef(null);
+
+      const allCells = () => {
+        const out = [];
+        PRONOUNS.filter(p => selectedPronouns.has(p.id)).forEach(p => {
+          cellsOf(p, numberMode, !englishMode).forEach(c => out.push({ p, ...c }));
+        });
+        return out;
+      };
+      const pool = allCells();
+      const totalInPool = pool.length;
+      const totalAvailable = pool.filter(c => !seenCells.has(cellKey(c.p, c))).length;
+
+      useEffect(() => {
+        if (started && inputRef.current) inputRef.current.focus();
+      }, [started, currentIdx, feedback]);
+
+      const startDrill = useCallback(() => {
+        const fresh = allCells().filter(c => !seenCells.has(cellKey(c.p, c)));
+        if (fresh.length === 0) return;
+        const items = shuffle(fresh).slice(0, Math.min(totalQuestions, fresh.length));
+        setSeenCells(prev => {
+          const next = new Set(prev);
+          items.forEach(c => next.add(cellKey(c.p, c)));
+          return next;
+        });
+        setQueue(items);
+        setCurrentIdx(0);
+        setInput("");
+        setFeedback(null);
+        setScore({ correct: 0, wrong: 0 });
+        setMissed([]);
+        setMainLength(items.length);
+        setStarted(true);
+        setShowPrincipal(false);
+        setStartTime(Date.now());
+        setReported(false);
+      }, [selectedPronouns, totalQuestions, seenCells, numberMode, englishMode]);
+
+      const resetSession = () => {
+        setSeenCells(new Set());
+        setStarted(false);
+      };
+
+      const logout = () => {
+        try { localStorage.removeItem("exercitiaStudent"); } catch (e) {}
+        window.location.href = "index.html";
+      };
+
+      const checkAnswer = () => {
+        if (!input.trim()) return;
+        const item = queue[currentIdx];
+        const accepted = getForms(item.p, item.g, item.num, item.cs);
+        const display = accepted.join(" / ");
+        if (accepted.some(a => normalize(input) === normalize(a))) {
+          setFeedback("correct");
+          setScore(s => ({ ...s, correct: s.correct + 1 }));
+          setCorrectAnswer(display);
+        } else {
+          setFeedback("wrong");
+          setScore(s => ({ ...s, wrong: s.wrong + 1 }));
+          setCorrectAnswer(display);
+          setMissed(prev => [...prev, {
+            p: item.p, g: item.g, num: item.num, cs: item.cs,
+            wrongAnswer: input.trim(), correctForm: display
+          }]);
+          setQueue(prev => [...prev, { ...item, isRetry: true }]);
+        }
+      };
+
+      const nextQuestion = () => {
+        setCurrentIdx(i => i + 1);
+        setInput("");
+        setFeedback(null);
+        setCorrectAnswer("");
+        setShowPrincipal(false);
+      };
+
+      const togglePronoun = (id) => {
+        setSelectedPronouns(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id); else next.add(id);
+          return next;
+        });
+      };
+
+      const done = currentIdx >= queue.length && started;
+
+      useEffect(() => {
+        if (done && !reported) {
+          const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+          const pct = queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0;
+          postToSheets({
+            student: studentName.trim(),
+            exercise: "Prōnōmina",
+            numberMode: numberMode,
+            pronouns: [...selectedPronouns].join(", "),
+            clueMode: englishMode ? "English" : "Latin",
+            correct: score.correct,
+            total: queue.length,
+            percent: pct,
+            timeSeconds: elapsed,
+            missed: missed.map(m => ({
+              pronoun: m.p.id,
+              gender: m.g,
+              case_: m.cs,
+              number: m.num,
+              wrong: m.wrongAnswer,
+              correct: m.correctForm
+            }))
+          });
+          setReported(true);
+        }
+      }, [done]);
+
+      const item = queue[currentIdx];
+
+      if (!studentName) {
+        window.location.href = "index.html";
+        return null;
+      }
+
+      // ====== SETUP SCREEN ======
+      if (!started) {
+        return (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.5rem" }}>
+              <h1 style={{
+                fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+                textTransform: "uppercase", borderBottom: "none",
+                color: "#c9b97a", margin: 0
+              }}>
+                Prōnōmina
+              </h1>
+              <div style={{ fontSize: "0.8rem", color: "#888" }}>
+                <span style={{ marginRight: "0.75rem" }}>{studentName}</span>
+                <button onClick={logout} style={{ ...linkBtn, fontSize: "0.75rem" }}>ēxī</button>
+              </div>
+            </div>
+            <div style={{ borderBottom: "1px solid #555", marginBottom: "1.5rem" }}></div>
+
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "1.5rem", color: "#b0ab9a" }}>
+              Prōnōmina sēlige et numerum quaestiōnum statue.
+            </p>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Prōnōmina:</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {PRONOUNS.map(p => (
+                  <button key={p.id} onClick={() => togglePronoun(p.id)} style={{
+                    padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                    border: selectedPronouns.has(p.id) ? "1px solid #c9b97a" : "1px solid #444",
+                    background: selectedPronouns.has(p.id) ? "#2a2824" : "transparent",
+                    color: selectedPronouns.has(p.id) ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={{ fontSize: "0.85rem", color: "#888" }}>
+                Numerus quaestiōnum:&nbsp;
+                <select value={totalQuestions} onChange={e => setTotalQuestions(Number(e.target.value))} style={{
+                  background: "#2a2824", color: "#e8e4d9", border: "1px solid #555",
+                  padding: "0.3rem 0.5rem", fontFamily: "inherit", fontSize: "0.85rem"
+                }}>
+                  {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Numerus:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {[
+                  { val: "sg", label: "Singulāris" },
+                  { val: "pl", label: "Plūrālis" },
+                  { val: "both", label: "Uterque" }
+                ].map(opt => (
+                  <button key={opt.val} onClick={() => setNumberMode(opt.val)} style={{
+                    padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                    border: numberMode === opt.val ? "1px solid #c9b97a" : "1px solid #444",
+                    background: numberMode === opt.val ? "#2a2824" : "transparent",
+                    color: numberMode === opt.val ? "#c9b97a" : "#777",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                  }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.1rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.5rem" }}>Modus:</p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button onClick={() => setEnglishMode(false)} style={{
+                  padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                  border: !englishMode ? "1px solid #c9b97a" : "1px solid #444",
+                  background: !englishMode ? "#2a2824" : "transparent",
+                  color: !englishMode ? "#c9b97a" : "#777",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                }}>
+                  Latīnē
+                </button>
+                <button onClick={() => setEnglishMode(true)} style={{
+                  padding: "0.35rem 0.9rem", fontSize: "0.85rem",
+                  border: englishMode ? "1px solid #c9b97a" : "1px solid #444",
+                  background: englishMode ? "#2a2824" : "transparent",
+                  color: englishMode ? "#c9b97a" : "#777",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s"
+                }}>
+                  Anglicē
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "1.5rem", fontSize: "0.85rem", color: "#888" }}>
+              <span>Fōrmae restantēs: <strong style={{ color: totalAvailable > 0 ? "#c9b97a" : "#b56b6b" }}>{totalAvailable}</strong> / {totalInPool}</span>
+            </div>
+
+            {totalAvailable === 0 && (
+              <p style={{ fontSize: "0.9rem", color: "#b56b6b", marginBottom: "1rem" }}>
+                Omnēs fōrmae iam vīsae sunt.
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <button onClick={startDrill} disabled={totalAvailable === 0} style={{
+                padding: "0.6rem 1.8rem", fontSize: "1rem",
+                background: totalAvailable === 0 ? "#333" : "#c9b97a",
+                color: totalAvailable === 0 ? "#666" : "#1a1a1e",
+                border: "none", cursor: totalAvailable === 0 ? "default" : "pointer",
+                fontFamily: "inherit", fontWeight: 600, letterSpacing: "0.06em"
+              }}>
+                Incipe
+              </button>
+              {totalAvailable === 0 && (
+                <button onClick={resetSession} style={{
+                  padding: "0.6rem 1.8rem", fontSize: "1rem",
+                  background: "#c9b97a", color: "#1a1a1e",
+                  border: "none", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 600, letterSpacing: "0.06em"
+                }}>
+                  Nova sessiō
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ====== RESULTS ======
+      if (done) {
+        const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        return (
+          <div>
+            <h1 style={{
+              fontSize: "1.6rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", borderBottom: "1px solid #555",
+              paddingBottom: "0.75rem", marginBottom: "1.5rem", color: "#c9b97a"
+            }}>
+              Prōnōmina
+            </h1>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 400, color: "#c9b97a", marginBottom: "1rem" }}>Fīnis</h2>
+            <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: "0.75rem" }}>{studentName}</p>
+            <p style={{ fontSize: "1.1rem", lineHeight: 1.8 }}>
+              Rēcta: <span style={{ color: "#7a9e7a" }}>{score.correct}</span> &nbsp;/&nbsp; Falsa: <span style={{ color: "#b56b6b" }}>{score.wrong}</span>
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", margin: "0.75rem 0" }}>
+              {(() => {
+                const pct = queue.length > 0 ? Math.round((score.correct / queue.length) * 100) : 0;
+                const r = 34, c = 2 * Math.PI * r;
+                const col = pct >= 80 ? "#7a9e7a" : pct >= 50 ? "#c9b97a" : "#b56b6b";
+                return (
+                  <svg width="84" height="84" viewBox="0 0 84 84">
+                    <circle cx="42" cy="42" r={r} fill="none" stroke="#333" strokeWidth="6" />
+                    <circle cx="42" cy="42" r={r} fill="none" stroke={col} strokeWidth="6"
+                      strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)}
+                      strokeLinecap="round" transform="rotate(-90 42 42)" />
+                    <text x="42" y="48" textAnchor="middle" fontSize="17" fill="#e8e4d9" fontFamily="inherit">{pct}%</text>
+                  </svg>
+                );
+              })()}
+              <span style={{ fontSize: "0.85rem", color: "#666" }}>
+                {mins > 0 ? mins + " min " : ""}{secs} s
+              </span>
+            </div>
+
+            {missed.length > 0 && (
+              <div style={{ marginTop: "1.5rem" }}>
+                <h3 style={{
+                  fontSize: "1rem", fontWeight: 400, color: "#a08850",
+                  marginBottom: "0.75rem", borderBottom: "1px solid #3a3a3e", paddingBottom: "0.5rem"
+                }}>
+                  Fōrmae corrigendae
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {missed.map((m, i) => (
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                      padding: "0.5rem 0.75rem", background: "#222226",
+                      border: "1px solid #3a3a3e", fontSize: "0.9rem"
+                    }}>
+                      <div>
+                        <span style={{ color: "#c9b97a" }}>{m.p.label}</span>
+                        <span style={{ color: "#666", marginLeft: "0.5rem" }}>
+                          ({CASE_LABELS[m.cs]} {NUM_LABELS[m.num]}, {GEN_LABELS[m.g]})
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: "#b56b6b", marginRight: "0.75rem" }}>{m.wrongAnswer}</span>
+                        <span style={{ color: "#7a9e7a" }}>{m.correctForm}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem" }}>
+              <button onClick={() => setStarted(false)} style={{
+                padding: "0.5rem 1.4rem", background: "#c9b97a", color: "#1a1a1e",
+                border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem", fontWeight: 600
+              }}>
+                Iterum
+              </button>
+              <button onClick={resetSession} style={{
+                padding: "0.5rem 1.4rem", background: "transparent", color: "#a08850",
+                border: "1px solid #a08850", cursor: "pointer", fontFamily: "inherit", fontSize: "0.95rem"
+              }}>
+                Nova sessiō
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ====== DRILL ======
+      return (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+            <h1 style={{
+              fontSize: "1.4rem", fontWeight: 400, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: "#c9b97a", margin: 0
+            }}>
+              Prōnōmina
+            </h1>
+            <span style={{ fontSize: "0.8rem", color: "#666" }}>{studentName}</span>
+          </div>
+          <div style={{ borderBottom: "1px solid #555", marginBottom: "1.25rem" }}></div>
+
+          <div className="progress-track"><div className="progress-fill" style={{ width: (queue.length ? (currentIdx / queue.length) * 100 : 0) + "%" }}></div></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "#777", marginBottom: "1.5rem" }}>
+            <span>
+              {currentIdx + 1} / {queue.length}
+              {currentIdx >= mainLength && <span style={{ color: "#a08850", marginLeft: "0.5rem" }}>(iterātiō)</span>}
+            </span>
+            <span style={{ color: "#7a9e7a" }}>{score.correct} recta</span>
+          </div>
+
+          <div style={{
+            background: "#222226", border: "1px solid #3a3a3e",
+            padding: "1.5rem", marginBottom: "1.25rem"
+          }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", marginBottom: "0.5rem" }}>
+              <span style={{
+                fontSize: "0.7rem", padding: "0.15rem 0.5rem",
+                border: "1px solid #7a9e7a", color: "#7a9e7a", letterSpacing: "0.06em"
+              }}>
+                PRŌNŌMEN
+              </span>
+            </div>
+            {englishMode ? (
+              <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
+                <span style={{ color: "#c9b97a" }}>{getEnglishPrompt(item.p, item.g, item.num, item.cs)}</span>
+                <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.p.label})</span>
+              </p>
+            ) : (
+              <div>
+                <p style={{ fontSize: "1.5rem", marginBottom: "0.75rem", marginTop: 0 }}>
+                  <span style={{ color: "#c9b97a" }}>{item.p.label}</span>
+                  <span style={{ fontSize: "0.85rem", color: "#888", marginLeft: "0.75rem" }}>({item.p.mng})</span>
+                </p>
+                <p style={{ fontSize: "1.1rem", marginBottom: 0, marginTop: 0 }}>
+                  Cāsus: <strong style={{ color: "#ddd" }}>
+                    {CASE_LABELS[item.cs]} {NUM_LABELS[item.num]}, {GEN_LABELS[item.g]}
+                  </strong>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  if (feedback) nextQuestion(); else checkAnswer();
+                }
+              }}
+              readOnly={!!feedback}
+              placeholder="Scrībe fōrmam..."
+              style={{
+                flex: 1, padding: "0.6rem 0.75rem", fontSize: "1.1rem",
+                fontFamily: "inherit", background: "#2a2824", color: "#e8e4d9",
+                border: feedback === "correct" ? "1px solid #7a9e7a"
+                  : feedback === "wrong" ? "1px solid #b56b6b" : "1px solid #555",
+                outline: "none"
+              }}
+            />
+            {!feedback ? (
+              <button onClick={checkAnswer} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#c9b97a", color: "#1a1a1e", border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontWeight: 600
+              }}>
+                Proba
+              </button>
+            ) : (
+              <button onClick={nextQuestion} style={{
+                padding: "0.6rem 1.2rem", fontSize: "0.95rem",
+                background: "#555", color: "#e8e4d9", border: "none",
+                cursor: "pointer", fontFamily: "inherit"
+              }}>
+                Proxima
+              </button>
+            )}
+          </div>
+
+          {feedback && (
+            <div className={feedback === "correct" ? "fb-ok" : "fb-no"} style={{
+              marginTop: "1rem", padding: "0.75rem 1rem",
+              background: feedback === "correct" ? "rgba(122,158,122,0.12)" : "rgba(181,107,107,0.12)",
+              border: feedback === "correct" ? "1px solid #4a6e4a" : "1px solid #7a4444"
+            }}>
+              {feedback === "correct" ? (
+                <p style={{ margin: 0, color: "#7a9e7a" }}>Rēctē. <strong>{correctAnswer}</strong></p>
+              ) : (
+                <p style={{ margin: 0, color: "#b56b6b" }}>
+                  Falsum. Rēspōnsum rēctum: <strong style={{ color: "#e8e4d9" }}>{correctAnswer}</strong>
+                </p>
+              )}
+            </div>
+          )}
+
+          <p style={{ fontSize: "0.7rem", color: "#555", marginTop: "1.5rem" }}>
+            Macrōna nōn requīruntur. Enter = proba / proxima.
+          </p>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
